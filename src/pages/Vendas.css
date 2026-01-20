@@ -1,0 +1,314 @@
+/* Página de Vendas - Design System Azul/Cyan */
+
+.vendas-container {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 40px 20px;
+  position: relative;
+}
+
+.vendas-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.05) 0%, rgba(6, 182, 212, 0.03) 50%, rgba(59, 130, 246, 0.05) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.vendas-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* Cards de Produto */
+.produto-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(96, 165, 250, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.produto-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.produto-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.1);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.produto-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(96, 165, 250, 0.2);
+}
+
+/* Formulário de Checkout */
+.checkout-form {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 30px rgba(96, 165, 250, 0.1);
+  overflow: hidden;
+}
+
+.checkout-form::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.checkout-form::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  box-shadow: 0 0 30px rgba(96, 165, 250, 0.1);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Inputs */
+.checkout-input {
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 16px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  width: 100%;
+}
+
+.checkout-input:focus {
+  outline: none;
+  border-color: rgba(96, 165, 250, 0.5);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.4), 0 0 20px rgba(96, 165, 250, 0.1);
+}
+
+.checkout-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Botões de Compra */
+.btn-comprar {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.8) 0%, rgba(6, 182, 212, 0.8) 100%);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2);
+  width: 100%;
+}
+
+.btn-comprar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #60a5fa 0%, #06b6d4 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(96, 165, 250, 0.3);
+}
+
+.btn-comprar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Preços/Destaques */
+.preco-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(96, 165, 250, 0.2);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 12px;
+  color: #60a5fa;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.preco-destaque {
+  font-size: 32px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #60a5fa 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* CTAs */
+.cta-section {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(96, 165, 250, 0.1);
+  overflow: hidden;
+}
+
+.cta-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.cta-button {
+  padding: 16px 32px;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.8) 0%, rgba(6, 182, 212, 0.8) 100%);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 12px;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2);
+}
+
+.cta-button:hover {
+  background: linear-gradient(135deg, #60a5fa 0%, #06b6d4 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(96, 165, 250, 0.3);
+}
+
+/* Seções de Planos/Pacotes */
+.planos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.plano-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(96, 165, 250, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.plano-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.05) 0%, transparent 50%, rgba(6, 182, 212, 0.05) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.plano-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.1);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.plano-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(96, 165, 250, 0.2);
+}
+
+/* Status de Pagamento */
+.pagamento-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pagamento-status--sucesso {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.pagamento-status--pendente {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+.pagamento-status--erro {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+/* Headers de Seção */
+.vendas-section-header {
+  position: relative;
+  padding: 24px 0;
+  margin-bottom: 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vendas-section-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(96, 165, 250, 0.3), transparent);
+}
+
+.vendas-section-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+.vendas-section-subtitle {
+  font-size: 16px;
+  color: #9ca3af;
+  margin: 0;
+}

@@ -1,0 +1,10 @@
+# Cursor ignore file - Frontend
+# Permitir acesso total a todos os arquivos, incluindo .env
+
+# Apenas ignoramos arquivos muito grandes:
+node_modules/
+dist/
+build/
+*.log
+
+# NÃO ignoramos .env, .env.example ou qualquer arquivo de configuração

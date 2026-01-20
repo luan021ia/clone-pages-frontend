@@ -1,0 +1,298 @@
+/* Estilos Base do Botão */
+/* Posicionamento do container controlado em Dashboard.css para evitar conflitos */
+.expand-button-container {
+  /* (sem posicionamento aqui) */
+}
+
+.expand-button {
+  /* Posicionamento Fixo */
+  position: relative;
+  
+  /* Dimensões */
+  width: 40px;
+  height: 40px;
+  
+  /* Aparência */
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  
+  /* Ícone */
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Interatividade */
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Acessibilidade */
+  outline: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Estados de Interação */
+.expand-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.expand-button:active {
+  transform: scale(0.95);
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.expand-button:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+/* Estado Expandido */
+.expand-button--expanded {
+  background: rgba(96, 165, 250, 0.9);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.expand-button--expanded:hover {
+  background: rgba(96, 165, 250, 1);
+  box-shadow: 0 4px 16px rgba(96, 165, 250, 0.4);
+}
+
+/* Ícones */
+.expand-button__icon {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  position: absolute;
+}
+
+.expand-button__icon--expand {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.expand-button__icon--collapse {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.expand-button__icon--expand.expand-button__icon--active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.expand-button__icon--collapse.expand-button__icon--active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Estado Desabilitado */
+.expand-button--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.expand-button--disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Estado Loading */
+.expand-button__spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Tamanhos */
+.expand-button--small {
+  width: 32px;
+  height: 32px;
+}
+
+.expand-button--small .expand-button__icon {
+  width: 16px;
+  height: 16px;
+}
+
+.expand-button--large {
+  width: 48px;
+  height: 48px;
+}
+
+.expand-button--large .expand-button__icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Temas */
+.expand-button--light {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
+.expand-button--light:hover {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.expand-button--colored {
+  background: rgba(96, 165, 250, 0.9);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.expand-button--colored:hover {
+  background: rgba(96, 165, 250, 1);
+  box-shadow: 0 4px 16px rgba(96, 165, 250, 0.4);
+}
+
+/* Tooltip */
+.expand-button__tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.2s ease;
+  z-index: 1001;
+}
+
+.expand-button__tooltip--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.expand-button__tooltip--top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  margin-bottom: 8px;
+}
+
+.expand-button__tooltip--top.expand-button__tooltip--visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.expand-button__tooltip--bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  margin-top: 8px;
+}
+
+.expand-button__tooltip--bottom.expand-button__tooltip--visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.expand-button__tooltip--left {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+  margin-right: 8px;
+}
+
+.expand-button__tooltip--left.expand-button__tooltip--visible {
+  transform: translateY(-50%) translateX(0);
+}
+
+.expand-button__tooltip--right {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  margin-left: 8px;
+}
+
+.expand-button__tooltip--right.expand-button__tooltip--visible {
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Overlay de Fundo */
+.expand-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.expand-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Regras de preview expandido controladas em Dashboard.css */
+
+/* Responsividade: apenas dimensões do botão/ícone */
+@media (max-width: 768px) {
+  .expand-button {
+    width: 36px;
+    height: 36px;
+  }
+  .expand-button__icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .expand-button {
+    width: 32px;
+    height: 32px;
+  }
+  .expand-button__icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Modo Escuro */
+@media (prefers-color-scheme: dark) {
+  .expand-button {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+  }
+  
+  .expand-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .expand-button--light {
+    background: rgba(255, 255, 255, 0.9);
+    color: #000000;
+  }
+}
+
+/* Redução de Movimento */
+@media (prefers-reduced-motion: reduce) {
+  .expand-button,
+  .expand-button__icon,
+  .expand-button__tooltip,
+  .expand-overlay,
+  .preview-container--expanded {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -1,0 +1,67 @@
+.license-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.license-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.license-text {
+  line-height: 1;
+}
+
+.license-admin {
+  background: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
+  border: 2px solid rgba(96, 165, 250, 0.3);
+}
+
+.license-active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.license-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.license-expired,
+.license-inactive {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 2px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .license-status {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .license-icon {
+    font-size: 14px;
+  }
+}

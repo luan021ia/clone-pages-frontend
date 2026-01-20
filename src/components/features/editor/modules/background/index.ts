@@ -1,0 +1,1 @@
+export { BackgroundTab } from './BackgroundTab';
