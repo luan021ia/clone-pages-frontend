@@ -64,7 +64,33 @@ frontend/
 
 ## 🚢 Deploy
 
-O build de produção gera os arquivos na pasta `dist/`. Faça upload dessa pasta para seu servidor web.
+### Deploy Automático (Dokploy)
+
+O projeto está configurado para deploy automático via Docker:
+
+1. **Build de produção:**
+```bash
+npm run build
+```
+
+2. **Commit e push (aciona deploy automático):**
+```bash
+git add .
+git commit -m "Deploy: atualização"
+git push origin main
+```
+
+O Dokploy detecta o `Dockerfile` e faz o build automaticamente usando Nginx para servir os arquivos estáticos.
+
+### Arquivos de Deploy
+
+- `Dockerfile` - Container Nginx Alpine
+- `nginx.conf` - Configuração do servidor web com MIME types corretos
+- `dist/` - Arquivos buildados (incluídos no repositório)
+
+### URL de Produção
+
+- **Frontend**: https://clonepages.fabricadelowticket.com.br
 
 ## 📞 Backend
 
