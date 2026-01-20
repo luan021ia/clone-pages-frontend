@@ -1,23 +1,33 @@
-// Silenciador definitivo de console no frontend (sem alternância)
-(() => {
-  const noop = () => {};
-  try {
-    const hasWindow = typeof window !== 'undefined';
-    if (!hasWindow) return;
+/**
+ * Console seguro para produção
+ * Remove logs sensíveis em ambiente de produção
+ */
 
-    const c = (window as any).console || ((window as any).console = {});
-    const methods = ['log', 'info', 'debug', 'warn', 'error', 'trace', 'group', 'groupCollapsed', 'groupEnd'];
+const isDevelopment = import.meta.env.DEV;
 
-    for (const m of methods) {
-      try {
-        Object.defineProperty(c, m, { value: noop, writable: false, configurable: false });
-      } catch {
-        (c as any)[m] = noop;
-      }
+export const secureConsole = {
+  log: (...args: any[]) => {
+    if (isDevelopment) {
+      console.log(...args);
     }
+  },
+  
+  warn: (...args: any[]) => {
+    if (isDevelopment) {
+      console.warn(...args);
+    }
+  },
+  
+  error: (...args: any[]) => {
+    // Sempre mostrar erros, mesmo em produção
+    console.error(...args);
+  },
+  
+  debug: (...args: any[]) => {
+    if (isDevelopment) {
+      console.debug(...args);
+    }
+  },
+};
 
-    try { Object.freeze(c); } catch {}
-  } catch {
-    // Ignorar falhas de redefinição de console
-  }
-})();
+export default secureConsole;
