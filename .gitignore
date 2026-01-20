@@ -8,7 +8,7 @@ coverage/
 *.lcov
 
 # Production
-dist/
+# dist/ (comentado para incluir build no deploy)
 build/
 
 # Environment variables
