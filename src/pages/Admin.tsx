@@ -70,7 +70,6 @@ export const Admin: React.FC = () => {
           setNewUsersDetected(true);
           // Auto-hide após 5 segundos
           setTimeout(() => setNewUsersDetected(false), 5000);
-          console.log(`✅ ${newCount} novo(s) usuário(s) detectado(s) via Kiwify!`);
         }
         return allUsers.length;
       });
@@ -82,7 +81,6 @@ export const Admin: React.FC = () => {
             const license = await authService.getUserLicense(u.id);
             return { ...u, license };
           } catch (err) {
-            console.warn(`Falha ao carregar licença do usuário ${u.id}:`, err);
             // Usuário é retornado sem licença se falhar
             return { ...u, license: undefined };
           }
@@ -92,7 +90,6 @@ export const Admin: React.FC = () => {
       setUsers(usersWithLicense);
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar usuários');
-      console.error('Erro em loadUsers:', err);
     } finally {
       if (!silent) {
         setLoading(false);

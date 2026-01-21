@@ -99,7 +99,6 @@ export const useEditor = (
           break;
 
         case 'ELEMENT_UPDATED':
-          console.log('📝 [useEditor] Elemento atualizado');
           setHasEdits(true);
           
           // 🎯 Após update, salvar o novo estado no histórico
@@ -121,7 +120,6 @@ export const useEditor = (
           break;
 
         case 'HTML_RESTORED':
-          console.log('🔄 [useEditor] HTML restaurado');
           setHasEdits(false);
           setSelectedElement(null);
           break;
@@ -135,11 +133,9 @@ export const useEditor = (
   // 🎯 Aplicar HTML do histórico no iframe
   const applyHtmlToIframe = useCallback((html: string) => {
     if (!iframeRef.current?.contentWindow) {
-      console.warn('❌ [applyHtmlToIframe] iframe não disponível');
       return;
     }
 
-    console.log('📤 [applyHtmlToIframe] Aplicando HTML do histórico...');
     iframeRef.current.contentWindow.postMessage({
       source: 'EDITOR_PARENT',
       type: 'APPLY_HTML',
@@ -222,10 +218,8 @@ export const useEditor = (
   // Save edits
   const saveEdits = useCallback(() => {
     if (!hasEdits) {
-      console.warn('⚠️ [saveEdits] No edits to save');
       return;
     }
-    console.log('💾 [saveEdits] Saving edits...');
     setHasSavedEdits(true);
     setHasEdits(false);
   }, [hasEdits]);
@@ -238,7 +232,6 @@ export const useEditor = (
   // 🔧 Abrir configurações da página (Ferramentas) automaticamente
   // Cria um elemento virtual para abrir o EditorPanel na aba Ferramentas
   const openPageSettings = useCallback(() => {
-    console.log('🔧 [useEditor] Abrindo configurações da página...');
     
     // Criar elemento especial que indica "configurações da página"
     const pageSettingsElement: SelectedElement = {
@@ -289,12 +282,10 @@ export const useEditor = (
   // Duplicate element
   const duplicateElement = useCallback(async () => {
     if (!iframeRef.current?.contentWindow) {
-      console.warn('❌ [duplicateElement] iframe não disponível');
       return;
     }
 
     // Apenas duplicar - o histórico será salvo depois no ELEMENT_UPDATED
-    console.log('📋 [duplicateElement] Duplicando elemento...');
     iframeRef.current.contentWindow.postMessage({
       source: 'EDITOR_PARENT',
       type: 'DUPLICATE_ELEMENT',

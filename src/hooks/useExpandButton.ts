@@ -44,7 +44,6 @@ export const useExpandButton = ({
         try {
           localStorage.removeItem(storageKey);
         } catch (error) {
-          console.warn('Failed to clear expand state when disabled:', error);
         }
       }
       return;
@@ -58,7 +57,6 @@ export const useExpandButton = ({
           setIsExpanded(parsed);
         }
       } catch (error) {
-        console.warn('Failed to parse saved expand state:', error);
       }
     }
   }, [storageKey, enabled]);
@@ -84,7 +82,6 @@ export const useExpandButton = ({
         try {
           localStorage.removeItem(storageKey);
         } catch (error) {
-          console.warn('Failed to clear expand state on disable:', error);
         }
       }
     }

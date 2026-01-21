@@ -7,7 +7,6 @@ export const useIframe = () => {
 
   const requestEditedHtml = useCallback(async (): Promise<string> => {
     if (!iframeRef.current?.contentWindow) {
-      console.error('❌ useIframe: iframe contentWindow not available');
       return '';
     }
 
@@ -27,7 +26,6 @@ export const useIframe = () => {
     }
 
     if (!iframeRef.current?.contentDocument) {
-      console.warn('⚠️ useIframe: iframe document not available');
       return () => {};
     }
 
@@ -35,16 +33,12 @@ export const useIframe = () => {
       const iframeDoc = iframeRef.current.contentDocument;
 
       if (!iframeDoc.body) {
-        console.warn('⚠️ useIframe: iframe body not available');
         return () => {};
       }
 
       // Create new observer
       observerRef.current = new MutationObserver((mutations) => {
         // Log mutations for debugging (can be removed in production)
-        if (mutations.length > 0) {
-          console.log(`📝 DOM changes detected in iframe: ${mutations.length} mutations`);
-        }
       });
 
       observerRef.current.observe(iframeDoc.body, {
@@ -63,7 +57,6 @@ export const useIframe = () => {
         if (observerRef.current) {
           observerRef.current.disconnect();
           observerRef.current = null;
-          console.log('✅ useIframe: DOM observer stopped');
         }
       };
     } catch (error) {
@@ -78,7 +71,6 @@ export const useIframe = () => {
     if (!iframe) return;
 
     const handleLoad = () => {
-      console.log('✅ useIframe: iframe loaded');
       syncDOMChanges();
     };
 

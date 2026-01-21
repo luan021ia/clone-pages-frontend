@@ -123,7 +123,6 @@ export const Dashboard: React.FC = () => {
         setUrlHistory(cleanHistory);
       }
     } catch (error) {
-      console.log('Erro ao carregar histórico, limpando dados:', error);
       // Limpar localStorage corrompido
       localStorage.removeItem('clonepages-url-history');
       setUrlHistory([]);
@@ -136,7 +135,6 @@ export const Dashboard: React.FC = () => {
       try {
         localStorage.setItem('clonepages-url-history', JSON.stringify(urlHistory));
       } catch (error) {
-        console.log('Erro ao salvar histórico:', error);
       }
     }
   }, [urlHistory]);
@@ -186,7 +184,6 @@ export const Dashboard: React.FC = () => {
       const whatsappData = localStorage.getItem('clonepages-whatsapp-history');
       if (whatsappData) setWhatsappHistory(JSON.parse(whatsappData).slice(0, 5));
     } catch (error) {
-      console.log('Erro ao carregar históricos dos códigos:', error);
     }
   }, []);
 
@@ -241,7 +238,6 @@ export const Dashboard: React.FC = () => {
         setUserLicense(license || null);
       } catch (error) {
         // Silencioso - admin ou usuário sem licença não precisa mostrar erro
-        console.warn('Não foi possível carregar licença:', error);
         setUserLicense(null);
       } finally {
         setLoadingLicense(false);
@@ -264,8 +260,6 @@ export const Dashboard: React.FC = () => {
   // 🎯 Função para injetar o editor COMPLETO via servidor
   const injectEditorCompleteViaServer = useCallback(async (html: string): Promise<string | null> => {
     try {
-      console.log('🚀 [injectEditorCompleteViaServer] Injetando editor completo via servidor...');
-
       const response = await fetch(`${API_BASE_URL}/inject-editor`, {
         method: 'POST',
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -277,11 +271,9 @@ export const Dashboard: React.FC = () => {
       }
 
       const htmlWithEditor = await response.text();
-      console.log('✅ [injectEditorCompleteViaServer] Editor injetado com sucesso (tamanho:', htmlWithEditor.length, 'bytes)');
       return htmlWithEditor;
 
     } catch (error) {
-      console.error('❌ [injectEditorCompleteViaServer] Erro:', error);
       return null;
     }
   }, []);
@@ -290,11 +282,8 @@ export const Dashboard: React.FC = () => {
   const injectEditorScriptInHtml = useCallback((html: string): string => {
     // Verificar se o script já existe
     if (html.includes('id="cp-editor-script"')) {
-      console.log('✅ [injectEditorScriptInHtml] Script já existe no HTML');
       return html;
     }
-
-    console.log('📝 [injectEditorScriptInHtml] Injetando script de editor no HTML editado...');
 
     // 🎬 Remover autoplay do YouTube (para não atrapalhar no modo edição)
     let processedHtml = html
@@ -306,7 +295,6 @@ export const Dashboard: React.FC = () => {
     const editorActivationScript = `<script id="cp-editor-script">
 (function() {
   'use strict';
-  console.log('🎨 [Editor] Ativando editor visual no HTML editado...');
 
   // Marcar HTML como em modo edição
   document.documentElement.setAttribute('data-clonepages-edit', 'true');
@@ -322,7 +310,6 @@ export const Dashboard: React.FC = () => {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        console.log('🚫 [Editor] Navegação bloqueada para edição:', target.tagName, target.textContent?.slice(0, 30));
       }
     }
   }, true); // useCapture = true para interceptar ANTES do elemento
@@ -330,12 +317,10 @@ export const Dashboard: React.FC = () => {
   // 🚫 BLOQUEAR SCROLL DE ÂNCORAS: Prevenir navegação por hash (#section)
   window.addEventListener('hashchange', function(e) {
     e.preventDefault();
-    console.log('🚫 [Editor] Navegação por hash bloqueada');
   }, true);
 
   // Tentar carregar o editor completo via postMessage
   if (window.parent && window.parent !== window) {
-    console.log('📤 [Editor] Solicitando inicialização completa do editor...');
     window.parent.postMessage({
       source: 'EDITOR_IFRAME',
       type: 'EDITOR_READY'
@@ -464,8 +449,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 `;
     }
     
-    console.log('💉 [injectTrackingCodesLocally] Processando códigos...');
-    
     // 🧹 SEMPRE remover códigos antigos PRIMEIRO (independente se vai injetar novos)
     let cleanedHtml = html.replace(/<!-- Meta Pixel Code \(Tuglet\) -->[\s\S]*?<!-- End Meta Pixel Code -->/g, '');
     cleanedHtml = cleanedHtml.replace(/<!-- Google tag \(gtag\.js\) \(Tuglet\) -->[\s\S]*?<!-- End Google tag -->/g, '');
@@ -475,11 +458,8 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
     
     // Se não tem nada para injetar, retornar HTML limpo (sem códigos)
     if (!injections) {
-      console.log('🧹 [injectTrackingCodesLocally] Todos toggles desativados - códigos removidos');
       return cleanedHtml;
     }
-    
-    console.log('✅ [injectTrackingCodesLocally] Injetando novos códigos...');
     
     // Injetar antes do </head>
     if (cleanedHtml.includes('</head>')) {
@@ -497,55 +477,27 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 
   // 🎯 EFFECT: Quando reativa editMode com savedEditedHtml, injetar editor completo
   useEffect(() => {
-    console.log('\n🔍 [DEBUG EDITOR INJECTION] ========== VERIFICANDO INJEÇÃO ==========');
-    console.log('🔍 [DEBUG EDITOR INJECTION] state.editMode:', state.editMode);
-    console.log('🔍 [DEBUG EDITOR INJECTION] savedEditedHtml existe?:', !!savedEditedHtml);
-    console.log('🔍 [DEBUG EDITOR INJECTION] htmlWithEditorInjected existe?:', !!htmlWithEditorInjected);
-    console.log('🔍 [DEBUG EDITOR INJECTION] isInjectingRef.current:', isInjectingRef.current);
-
     // Ativar: state.editMode é true, temos savedEditedHtml, e ainda não injetamos
     const shouldInject = state.editMode && savedEditedHtml && !htmlWithEditorInjected && !isInjectingRef.current;
-    console.log('🔍 [DEBUG EDITOR INJECTION] DEVERIA INJETAR?:', shouldInject);
 
     if (shouldInject) {
-      console.log('\n🔴🔴🔴 [INJEÇÃO INICIADA] Reativando com savedEditedHtml 🔴🔴🔴\n');
-      console.log('🔄 [INJETAR] savedEditedHtml tamanho:', savedEditedHtml.length, 'bytes');
       isInjectingRef.current = true;
 
       injectEditorCompleteViaServer(savedEditedHtml).then((htmlWithEditor) => {
         isInjectingRef.current = false;
-        console.log('📥 [INJETAR] injectEditorCompleteViaServer retornou:', {
-          sucesso: !!htmlWithEditor,
-          tamanho: htmlWithEditor?.length || 0,
-        });
-
         if (htmlWithEditor) {
-          console.log('✅✅✅ [INJEÇÃO SUCCESS] Editor injetado via servidor!');
-          console.log('   - Tamanho do HTML com editor:', htmlWithEditor.length, 'bytes');
-          console.log('   - Salvando htmlWithEditorInjected...');
           setHtmlWithEditorInjected(htmlWithEditor);
-          console.log('✅✅✅ [INJEÇÃO COMPLETE] Estado atualizado com htmlWithEditorInjected ✅✅✅\n');
         } else {
-          console.warn('⚠️ [INJETAR] Injeção via servidor falhou, usando fallback...');
           const fallbackHtml = injectEditorScriptInHtml(savedEditedHtml);
-          console.log('   - Fallback HTML tamanho:', fallbackHtml.length, 'bytes');
           setHtmlWithEditorInjected(fallbackHtml);
-          console.log('⚠️ [INJETAR] Fallback aplicado\n');
         }
-      }).catch((error) => {
+      }).catch(() => {
         isInjectingRef.current = false;
-        console.error('❌ [INJETAR FAILED] Erro ao injetar editor:', error);
       });
-    } else {
-      if (!state.editMode) console.log('⚪ [SKIP INJEÇÃO] state.editMode é FALSE');
-      if (!savedEditedHtml) console.log('⚪ [SKIP INJEÇÃO] savedEditedHtml é null');
-      if (htmlWithEditorInjected) console.log('⚪ [SKIP INJEÇÃO] htmlWithEditorInjected já existe');
-      if (isInjectingRef.current) console.log('⚪ [SKIP INJEÇÃO] isInjectingRef.current já está true (injeção em progresso)');
     }
 
     // Desativar: editMode é false, limpar htmlWithEditorInjected
     if (!state.editMode && htmlWithEditorInjected) {
-      console.log('\n🧹 [LIMPEZA] Desativando editMode, limpando htmlWithEditorInjected');
       setHtmlWithEditorInjected(null);
     }
   }, [state.editMode, savedEditedHtml, htmlWithEditorInjected]);
@@ -643,15 +595,13 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
   // Função para verificar se o script de edição foi injetado via postMessage
   const checkEditorScript = useCallback(() => {
     if (!iframeRef.current?.contentWindow) {
-      console.warn('⚠️ [checkEditorScript] Iframe não está pronto');
+
       return;
     }
 
     // Usar postMessage para verificar o status do editor sem problemas de cross-origin
     const checkTimeout = setTimeout(() => {
-      console.warn(
-        '⚠️ [checkEditorScript] Timeout - iframe não respondeu em 3s'
-      );
+
     }, 3000);
 
     const handleEditorStatusMessage = (event: MessageEvent) => {
@@ -682,26 +632,15 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         window.removeEventListener('message', handleEditorStatusMessage);
 
         const status = event.data.data;
-        console.log('🔍 [checkEditorScript] Status do Editor no Iframe:');
-        console.log('  - data-clonepages-edit:', status.hasEditAttribute);
-        console.log(
-          '  - Script de edição (#cp-editor-script):',
-          status.hasEditorScript
-        );
-        console.log(
-          '  - Estilo de edição (#cp-editor-style):',
-          status.hasEditorStyle
-        );
-        console.log('  - Div de ajuda (#cp-help):', status.hasHelpDiv);
+
+
 
         if (!status.hasEditAttribute || !status.hasEditorScript) {
-          console.error(
-            '❌ [checkEditorScript] SCRIPT DE EDIÇÃO NÃO FOI INJETADO!'
-          );
-          console.error('   editMode atual:', state.editMode);
-          console.error('   iframeSrc:', state.iframeSrc);
+
+
+
         } else {
-          console.log('✅ [checkEditorScript] Script de edição está ativo!');
+
         }
       }
     };
@@ -709,7 +648,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
     window.addEventListener('message', handleEditorStatusMessage);
 
     // Solicitar status do editor
-    console.log('📤 [checkEditorScript] Solicitando status do editor...');
+
     iframeRef.current.contentWindow.postMessage(
       {
         source: 'EDITOR_PARENT',
@@ -743,22 +682,15 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
     // Remover atributos data-clonepages-edit se existirem
     cleanedHtml = cleanedHtml.replace(/\s+data-clonepages-edit="[^"]*"/g, '');
 
-    console.log('🧹 [cleanEditorScriptsFromHtml] HTML limpo:', {
-      original: html.length,
-      cleaned: cleanedHtml.length,
-      removed: html.length - cleanedHtml.length
-    });
-
     return cleanedHtml;
   }, []);
 
   // Wrapper para restoreOriginalHtml que também limpa savedEditedHtml
   // 🎯 FUNÇÃO MANOVA: Salvar todas as edições manualmente
   const handleSaveAllEdits = useCallback(async () => {
-    console.log('💾 [handleSaveAllEdits] SALVAMENTO MANUAL INICIADO');
 
     if (!iframeRef.current?.contentWindow) {
-      console.error('❌ [handleSaveAllEdits] IFRAME CONTENTWINDOW NÃO EXISTE!');
+
       showFeedback('Erro ao salvar edições');
       return;
     }
@@ -768,7 +700,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       const editedHtml = await getEditedHtml();
 
       if (editedHtml && editedHtml.trim().length > 0) {
-        console.log('✅ [handleSaveAllEdits] HTML válido obtido! Tamanho:', editedHtml.length);
 
         // 🎯 LIMPAR scripts de editor APENAS PARA ARMAZENAMENTO
         const cleanedHtml = cleanEditorScriptsFromHtml(editedHtml);
@@ -779,7 +710,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         // Re-injeção só acontece quando:
         // 1. Desligar o modo edição
         // 2. Reativar o modo edição (useEffect já cuida disso)
-        console.log('💾 [handleSaveAllEdits] Salvando HTML sem recarregar iframe (mantém scroll)');
 
         // Salvar HTML limpo no estado
         setSavedEditedHtml(cleanedHtml);
@@ -788,20 +718,19 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         saveEdits();
 
         showFeedback('✅ Edições salvas com sucesso!');
-        console.log('✅ [handleSaveAllEdits] SALVAMENTO COMPLETO - IFRAME NÃO RECARREGADO - SCROLL MANTIDO');
+
       } else {
-        console.error('❌ [handleSaveAllEdits] HTML vazio ou inválido');
+
         showFeedback('Erro ao salvar: HTML inválido');
       }
     } catch (error) {
-      console.error('❌ [handleSaveAllEdits] ERRO ao salvar:', error);
+
       showFeedback('Erro ao salvar edições');
     }
   }, [getEditedHtml, saveEdits, showFeedback, cleanEditorScriptsFromHtml]);
 
   // 🎯 FUNÇÃO MANOVA: Remover elemento selecionado
   const handleRemoveElement = useCallback(() => {
-    console.log('🗑️ [handleRemoveElement] REMOVENDO ELEMENTO:', selectedElement);
 
     if (!selectedElement) {
       showFeedback('❌ Nenhum elemento selecionado para remover');
@@ -821,9 +750,9 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       }, '*');
 
       // A limpeza da seleção e o feedback serão feitos quando recebermos a resposta
-      console.log('📤 [handleRemoveElement] Mensagem CLONEPAGES_REMOVE_ELEMENT enviada');
+
     } catch (error) {
-      console.error('❌ [handleRemoveElement] ERRO ao enviar mensagem:', error);
+
       showFeedback('Erro ao remover elemento');
       // Forçar limpeza em caso de erro
       clearSelection();
@@ -886,17 +815,11 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         _t: timestamp.toString(), // Cache buster para forçar reload
       });
 
-      console.log(
-        '🚀 [startClone] Clonando página com códigos originais:',
-        iframeSrc
-      );
-      console.log('🧹 [startClone] Estados de edição limpos (savedEditedHtml, htmlWithEditorInjected)');
-      console.log('🔄 [startClone] Timestamp adicionado para forçar reload:', timestamp);
 
       // 🎯 Iniciar timeout de 120 segundos para detectar erro de clonagem
       // Sites Next.js com Puppeteer demoram mais (20-30s é normal)
       cloneTimeoutRef.current = setTimeout(() => {
-        console.error('❌ [startClone] Timeout: Clonagem demorou mais de 120 segundos');
+
         setCloneError('A clonagem está demorando muito. O site pode estar indisponível ou muito pesado.');
       }, 120000); // 120 segundos (2 minutos)
 
@@ -922,7 +845,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 
   // 🎯 Handler para toggle do modo edição com loading
   const handleEditModeToggle = useCallback((checked: boolean) => {
-    console.log('🎨 [handleEditModeToggle] Alterando modo edição:', checked);
 
     // Ativar loading
     setIsEditorLoading(true);
@@ -935,7 +857,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
     if (checked) {
       // Delay para garantir que o iframe carregue primeiro
       setTimeout(() => {
-        console.log('🔧 [handleEditModeToggle] Abrindo configurações da página automaticamente');
+
         openPageSettings();
       }, 500);
     }
@@ -948,7 +870,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       // 🔒 SEGURANÇA: Bloquear cópia se Modo Edição está ativo
       if (state.editMode) {
         showFeedback('⚠️ Desative o Modo Edição para copiar o código', 'warning');
-        console.warn('❌ [copyOriginalHtml] Tentativa de cópia com Modo Edição ATIVADO');
+
         return;
       }
 
@@ -956,13 +878,13 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 
       // 🎯 Se tem HTML salvo de edições anteriores, usar ele (sem Modo Edição)
       if (savedEditedHtml && hasSavedEdits) {
-        console.log('📋 [copyOriginalHtml] Usando HTML editado salvo');
+
         html = savedEditedHtml;
       }
 
       // Se não, buscar do servidor COM OS CÓDIGOS INJETADOS
       if (!html) {
-        console.log('📋 [copyOriginalHtml] Buscando HTML do servidor');
+
         // 🎯 CONSTRUIR URL COM OS MESMOS PARAMETROS DO IFRAME ATUAL
         const hasCustomCodes = Boolean(
           (state.pixelId && state.pixelEnabled) ||
@@ -990,8 +912,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
             state.utmfyCode && state.utmfyEnabled ? state.utmfyCode : undefined,
         });
 
-        console.log('📋 [copyOriginalHtml] Copiando HTML de:', copyUrl);
-
         // Fazer requisição direta ao endpoint
         const response = await fetch(copyUrl);
         if (!response.ok) {
@@ -1009,14 +929,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         const hasUtmfy = state.utmfyCode && html.includes(state.utmfyCode);
         const hasWhatsApp = state.whatsappNumber && html.includes(state.whatsappNumber);
 
-        console.log('📊 [COPY DEBUG] Códigos detectados no HTML:', {
-          pixelId: hasPixel,
-          gtagId: hasGtag,
-          clarityId: hasClarity,
-          utmfyCode: hasUtmfy,
-          whatsappNumber: hasWhatsApp,
-        });
-
         const success = await copyToClipboard(html);
         if (success) {
           let message = 'HTML copiado com códigos de rastreamento';
@@ -1029,7 +941,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         }
       }
     } catch (error) {
-      console.error('Erro ao copiar HTML:', error);
+
       showFeedback('Erro ao copiar HTML');
     }
   }, [
@@ -1047,7 +959,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       // 🔒 SEGURANÇA: Bloquear download se Modo Edição está ativo
       if (state.editMode) {
         showFeedback('⚠️ Desative o Modo Edição para baixar a página', 'warning');
-        console.warn('❌ [downloadOriginalHtml] Tentativa de download com Modo Edição ATIVADO');
+
         return;
       }
 
@@ -1055,25 +967,12 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       setIsDownloading(true);
 
       // ✅ SOLUÇÃO 1: Logging detalhado do estado dos códigos ANTES do download
-      console.log('📊 [DOWNLOAD DEBUG] ESTADO DOS CÓDIGOS ANTES DO DOWNLOAD:', {
-        pixelId: state.pixelId || '(vazio)',
-        pixelEnabled: state.pixelEnabled,
-        gtagId: state.gtagId || '(vazio)',
-        gtagEnabled: state.gtagEnabled,
-        utmfyCode: state.utmfyCode ? '(preenchido)' : '(vazio)',
-        utmfyEnabled: state.utmfyEnabled,
-        clarityId: state.clarityId || '(vazio)',
-        clarityEnabled: state.clarityEnabled,
-        whatsappNumber: state.whatsappNumber || '(vazio)',
-        whatsappEnabled: state.whatsappEnabled,
-        hasSavedEdits: hasSavedEdits,
-      });
 
       let html: string | null = null;
 
       // 🎯 PRIORIDADE 1: Se tem HTML salvo das edições, usar ele
       if (savedEditedHtml && hasSavedEdits) {
-        console.log('📥 [downloadOriginalHtml] Usando HTML editado salvo');
+
         html = savedEditedHtml;
       }
 
@@ -1083,7 +982,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       // Se o usuário quer manter edições, deve ter salvo antes.
 
       if (!html) {
-        console.log('📥 [downloadOriginalHtml] Buscando HTML do servidor COM CÓDIGOS INJETADOS');
+
         // ✅ SOLUÇÃO 2: Lógica melhorada - injetar se houver QUALQUER código preenchido
         const hasAnyCode = Boolean(
           state.pixelId ||
@@ -1093,13 +992,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
           state.utmfyCode
         );
 
-        console.log('📊 [DOWNLOAD DEBUG] hasAnyCode:', hasAnyCode, '| Parâmetros:', {
-          pixelId: state.pixelId ? '***' : undefined,
-          gtagId: state.gtagId ? '***' : undefined,
-          whatsappNumber: state.whatsappNumber ? '***' : undefined,
-          clarityId: state.clarityId ? '***' : undefined,
-          utmfyCode: state.utmfyCode ? '(preenchido)' : undefined,
-        });
 
         const downloadUrl = buildRenderPageUrl(state.url, {
           editMode: false, // Sempre false para download - queremos HTML fresco com códigos
@@ -1119,15 +1011,13 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
             state.utmfyCode && state.utmfyEnabled ? state.utmfyCode : undefined,
         });
 
-        console.log('📥 [downloadOriginalHtml] Baixando HTML de:', downloadUrl);
-
         // Fazer requisição direta ao endpoint
         const response = await fetch(downloadUrl);
         if (!response.ok) {
           throw new Error(`Falha ao buscar HTML: ${response.status}`);
         }
         html = await response.text();
-        console.log('📊 [DOWNLOAD DEBUG] HTML recebido do servidor. Tamanho:', html.length, 'bytes');
+
       }
 
       if (html) {
@@ -1143,14 +1033,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         const hadClarityBefore = state.clarityId && html.includes(state.clarityId);
         const hadUtmfyBefore = state.utmfyCode && html.includes(state.utmfyCode);
         const hadWhatsAppBefore = state.whatsappNumber && html.includes(state.whatsappNumber);
-
-        console.log('📊 [DOWNLOAD DEBUG] Códigos ENCONTRADOS no HTML antes da limpeza:', {
-          pixelId: hadPixelBefore,
-          gtagId: hadGtagBefore,
-          clarityId: hadClarityBefore,
-          utmfyCode: hadUtmfyBefore,
-          whatsappNumber: hadWhatsAppBefore,
-        });
 
         // Limpar artefatos do editor e códigos de rastreamento antes de baixar
         let finalHtml = CloneService.cleanEditorArtifacts(html);
@@ -1177,27 +1059,13 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         const hasUtmfyAfter = state.utmfyCode && finalHtml.includes(state.utmfyCode);
         const hasWhatsAppAfter = state.whatsappNumber && finalHtml.includes(state.whatsappNumber);
 
-        console.log('📊 [DOWNLOAD DEBUG] Códigos ENCONTRADOS no HTML após limpeza:', {
-          pixelId: hasPixelAfter,
-          gtagId: hasGtagAfter,
-          clarityId: hasClarityAfter,
-          utmfyCode: hasUtmfyAfter,
-          whatsappNumber: hasWhatsAppAfter,
-        });
-
         // Se algum código foi removido incorretamente, avisar o usuário
         if ((hadPixelBefore && !hasPixelAfter) ||
             (hadGtagBefore && !hasGtagAfter) ||
             (hadClarityBefore && !hasClarityAfter) ||
             (hadUtmfyBefore && !hasUtmfyAfter) ||
             (hadWhatsAppBefore && !hasWhatsAppAfter)) {
-          console.warn('⚠️ AVISO: Um ou mais códigos foram removidos durante a limpeza!', {
-            pixelRemoved: hadPixelBefore && !hasPixelAfter,
-            gtagRemoved: hadGtagBefore && !hasGtagAfter,
-            clarityRemoved: hadClarityBefore && !hasClarityAfter,
-            utmfyRemoved: hadUtmfyBefore && !hasUtmfyAfter,
-            whatsappRemoved: hadWhatsAppBefore && !hasWhatsAppAfter,
-          });
+
           showFeedback('⚠️ Aviso: Alguns códigos foram removidos durante o processamento. Verifique o arquivo!', 'warning');
         }
 
@@ -1228,7 +1096,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         showFeedback(message);
       }
     } catch (error) {
-      console.error('Erro ao fazer download:', error);
+
       showFeedback('Erro ao fazer download');
     } finally {
       // 🔄 Desativar loading
@@ -1326,7 +1194,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
   useEffect(() => {
     // Limpar estado quando modo edição for desativado
     if (wasEditModeActive && !state.editMode) {
-      console.log('🧹 [LIMPEZA] Modo edição desativado, limpando estados');
+
     }
 
     // Atualizar flag
@@ -1335,41 +1203,17 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 
   // 🎯 NOVA LÓGICA: Recarregar iframe APENAS quando códigos de rastreamento mudarem
   useEffect(() => {
-    console.log('\n\n🎯 ========== [useEffect CÓDIGOS] DISPARADO ==========');
-    console.log('🎯 [useEffect CÓDIGOS] Estado atual:', {
-      pixelId: state.pixelId || '(vazio)',
-      pixelEnabled: state.pixelEnabled,
-      gtagId: state.gtagId || '(vazio)',
-      gtagEnabled: state.gtagEnabled,
-      utmfyCode: state.utmfyCode ? '(preenchido)' : '(vazio)',
-      utmfyEnabled: state.utmfyEnabled,
-      clarityId: state.clarityId || '(vazio)',
-      clarityEnabled: state.clarityEnabled,
-      whatsappNumber: state.whatsappNumber || '(vazio)',
-      whatsappEnabled: state.whatsappEnabled,
-      editMode: state.editMode,
-      hasEdits,
-      iframeSrc: state.iframeSrc ? 'EXISTE' : 'VAZIO',
-      url: state.url || '(vazio)',
-    });
-
     // Só recarregar se já tiver clonado uma página
     if (!state.iframeSrc) {
-      console.log('❌ [BLOQUEADO] Motivo: Ainda não clonou nenhuma página (iframeSrc vazio)');
-      console.log('🎯 ========== [useEffect CÓDIGOS] ENCERRADO ==========\n\n');
       return;
     }
 
     if (!state.url) {
-      console.log('❌ [BLOQUEADO] Motivo: URL vazia');
-      console.log('🎯 ========== [useEffect CÓDIGOS] ENCERRADO ==========\n\n');
       return;
     }
 
     // 🎯 NOVA LÓGICA: Se tem HTML editado salvo, injetar códigos LOCALMENTE (sem recarregar)
     if (savedEditedHtml && !state.editMode) {
-      console.log('🔄 [INJEÇÃO LOCAL] HTML editado existe, verificando códigos...');
-      
       const trackingOptions = {
         pixelId: state.pixelId && state.pixelEnabled ? state.pixelId : undefined,
         gtagId: state.gtagId && state.gtagEnabled ? state.gtagId : undefined,
@@ -1395,37 +1239,24 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       const needsRemoval = needsRemovePixel || needsRemoveGtag || needsRemoveClarity || needsRemoveWhatsapp || needsRemoveUtmfy;
       
       if (!allCodesPresent || needsRemoval) {
-        console.log('💉 [INJEÇÃO LOCAL] Atualizando códigos...');
         const htmlWithCodes = injectTrackingCodesLocally(savedEditedHtml, trackingOptions);
         
         // Só atualizar se realmente mudou (evita loop infinito)
         if (htmlWithCodes !== savedEditedHtml) {
-          console.log('✅ [INJEÇÃO LOCAL] Códigos atualizados!');
           setSavedEditedHtml(htmlWithCodes);
-        } else {
-          console.log('⚪ [INJEÇÃO LOCAL] HTML não mudou, skip');
         }
-      } else {
-        console.log('⚪ [INJEÇÃO LOCAL] Códigos já presentes, skip');
       }
       
-      console.log('🎯 ========== [useEffect CÓDIGOS] ENCERRADO (injeção local) ==========\n\n');
       return;
     }
 
     // Se está no modo edição com HTML salvo, bloquear para preservar
     if (savedEditedHtml && state.editMode) {
-      console.log('⚠️ [BLOQUEADO] Motivo: Modo edição ativo com HTML salvo');
-      console.log('💡 [DICA] Desative o modo edição para aplicar os códigos');
-      console.log('🎯 ========== [useEffect CÓDIGOS] ENCERRADO ==========\n\n');
       return;
     }
 
     // Se tem edições ativas no modo edição, NÃO recarregar
     if (hasEdits && state.editMode) {
-      console.warn('❌ [BLOQUEADO] Motivo: Tem edições ativas no modo edição');
-      console.log('💡 [DICA] Para aplicar códigos: Salve as edições ou desative modo edição');
-      console.log('🎯 ========== [useEffect CÓDIGOS] ENCERRADO ==========\n\n');
       return;
     }
 
@@ -1454,32 +1285,13 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         state.utmfyCode && state.utmfyEnabled ? state.utmfyCode : undefined,
     });
 
-    console.log('✅ [SUCESSO] Passou todas as validações!');
-    console.log('🔧 [useEffect CÓDIGOS] Construindo nova URL...');
-    console.log('📊 [useEffect CÓDIGOS] Parâmetros:', {
-      injectCustom: hasCustomCodes,
-      pixelId: state.pixelId && state.pixelEnabled ? '***' : undefined,
-      gtagId: state.gtagId && state.gtagEnabled ? '***' : undefined,
-      whatsappNumber: state.whatsappNumber && state.whatsappEnabled ? '***' : undefined,
-      clarityId: state.clarityId && state.clarityEnabled ? '***' : undefined,
-      utmfyCode: state.utmfyCode && state.utmfyEnabled ? '(preenchido)' : undefined,
-    });
-    console.log('🔗 [useEffect CÓDIGOS] URL atual:', state.iframeSrc);
-    console.log('🔗 [useEffect CÓDIGOS] URL nova:', newUrl);
-
     // Só atualizar se a URL mudou
     if (newUrl !== state.iframeSrc) {
-      console.log('✅✅✅ [APLICANDO CÓDIGOS] Recarregando iframe com novos códigos!');
-
       // Ativar loading de códigos
       setIsApplyingCodes(true);
 
       updateState({ iframeSrc: newUrl });
-    } else {
-      console.log('⚠️ [SKIP] URL não mudou, não é necessário recarregar');
-      console.log('   Isso é normal se você não alterou nenhum código');
     }
-    console.log('🎯 ========== [useEffect CÓDIGOS] ENCERRADO ==========\n\n');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     // ✅ Removido state.url das dependências - só deve disparar quando CÓDIGOS mudarem, não quando URL for digitada
@@ -1544,7 +1356,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       alert('Senha atualizada com sucesso!');
       setShowProfileModal(false);
     } catch (error) {
-      console.error('Erro ao atualizar senha:', error);
+
       alert('Erro ao atualizar senha');
     } finally {
       setIsUpdatingProfile(false);
@@ -2003,9 +1815,9 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
                   
                   setExportHtml(html);
                   setShowExportModal(true);
-                  console.log('✅ [Export] Modal aberto com HTML:', html.length, 'bytes');
+
                 } catch (error) {
-                  console.error('❌ [Export] Erro ao preparar export:', error);
+
                   showFeedback('Erro ao preparar export: ' + (error instanceof Error ? error.message : 'Erro desconhecido'), 'error');
                 }
               }}
@@ -2141,29 +1953,28 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
                   title='Preview'
                   sandbox='allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox'
                   onLoad={() => {
-                    console.log('\n📺 ============ [IFRAME ONLOAD] ============');
-                    console.log('📺 [iframe onLoad] Iframe carregado!');
-                    console.log('📺 [iframe onLoad] editMode atual:', state.editMode);
-                    console.log('📺 [iframe onLoad] src:', state.iframeSrc);
-                    console.log('📺 [iframe onLoad] savedEditedHtml existe?:', !!savedEditedHtml);
-                    console.log('📺 [iframe onLoad] htmlWithEditorInjected existe?:', !!htmlWithEditorInjected);
+
+
+
+
+
 
                     // 🎯 SUCESSO: Limpar timeout de erro quando iframe carregar
                     if (cloneTimeoutRef.current) {
-                      console.log('✅ [iframe onLoad] Clonagem bem-sucedida, limpando timeout');
+
                       clearTimeout(cloneTimeoutRef.current);
                       cloneTimeoutRef.current = null;
                     }
 
                     // ✅ Desativar loading do editor quando iframe carregar
                     if (isEditorLoading) {
-                      console.log('✅ [iframe onLoad] Editor carregado, desativando loading');
+
                       setIsEditorLoading(false);
                     }
 
                     // ✅ Desativar loading de códigos quando iframe carregar
                     if (isApplyingCodes) {
-                      console.log('✅ [iframe onLoad] Códigos aplicados, desativando loading');
+
                       setIsApplyingCodes(false);
                     }
 
@@ -2178,26 +1989,23 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
                         : savedEditedHtml
                       : state.iframeSrc;
 
-                    console.log('📺 [iframe onLoad] *** USANDO SRCOC?:', usingSrcDoc);
-                    console.log('📺 [iframe onLoad] *** COM EDITOR?:', withEditor);
-                    console.log('📺 [iframe onLoad] *** CONTEÚDO TAMANHO:', typeof iframeContent === 'string' ? iframeContent.length : 'URL');
+
 
                     if (usingSrcDoc && state.editMode) {
-                      console.log('🟢 [iframe onLoad] SEGUNDA ATIVAÇÃO DETECTADA - USANDO SRCOC COM EDITOR');
+
                     } else if (usingSrcDoc) {
-                      console.log('🟡 [iframe onLoad] USANDO SRCOC MAS SEM EDITOR');
+
                     } else {
-                      console.log('🔵 [iframe onLoad] USANDO SRC (URL NORMAL)');
                     }
 
                     // Aguardar um momento para o script executar, depois verificar
                     setTimeout(() => {
-                      console.log('📺 [iframe onLoad] Aguardando 1s para scripts executarem...');
+
                       checkEditorScript();
                     }, 1000);
                   }}
                   onError={(e) => {
-                    console.error('❌ [iframe onError] Erro ao carregar iframe:', e);
+
                     setCloneError('Não foi possível clonar esta página. O site pode estar bloqueando o acesso ou estar indisponível.');
                     if (cloneTimeoutRef.current) {
                       clearTimeout(cloneTimeoutRef.current);
@@ -2366,3 +2174,4 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
     </div>
   );
 };
+

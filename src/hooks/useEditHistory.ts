@@ -62,7 +62,6 @@ export const useEditHistory = (): UseEditHistoryReturn => {
    */
   const pushState = useCallback((html: string, description?: string) => {
     if (isUndoRedoRef.current || !html) {
-      console.log('⏸️ [History] pushState bloqueado:', { isUndoRedo: isUndoRedoRef.current, hasHtml: !!html });
       return;
     }
 
@@ -74,7 +73,6 @@ export const useEditHistory = (): UseEditHistoryReturn => {
         description: description || 'Estado inicial',
       }];
       currentIndexRef.current = 0;
-      console.log('🎬 [History] Inicializado:', { index: 0, total: 1 });
       triggerUpdate();
       return;
     }
@@ -102,11 +100,6 @@ export const useEditHistory = (): UseEditHistoryReturn => {
     }
 
     currentIndexRef.current = historyRef.current.length - 1;
-    console.log(`✅ [History] Estado salvo: "${description}"`, { 
-      index: currentIndexRef.current, 
-      total: historyRef.current.length,
-      estados: historyRef.current.map((s, i) => `[${i}] ${s.description}`)
-    });
     triggerUpdate();
   }, [triggerUpdate]);
 
@@ -115,7 +108,6 @@ export const useEditHistory = (): UseEditHistoryReturn => {
    */
   const undo = useCallback((): string | null => {
     if (currentIndexRef.current <= 0 || historyRef.current.length <= 1) {
-      console.log('⚠️ [History] Undo bloqueado:', { index: currentIndexRef.current, total: historyRef.current.length });
       return null;
     }
 
@@ -123,10 +115,6 @@ export const useEditHistory = (): UseEditHistoryReturn => {
     currentIndexRef.current -= 1;
     const previousState = historyRef.current[currentIndexRef.current];
     
-    console.log(`↩️ [History] UNDO executado: "${previousState?.description}"`, { 
-      novoIndex: currentIndexRef.current, 
-      total: historyRef.current.length 
-    });
     
     triggerUpdate();
     
@@ -142,7 +130,6 @@ export const useEditHistory = (): UseEditHistoryReturn => {
    */
   const redo = useCallback((): string | null => {
     if (currentIndexRef.current >= historyRef.current.length - 1) {
-      console.log('⚠️ [History] Redo bloqueado:', { index: currentIndexRef.current, total: historyRef.current.length });
       return null;
     }
 
@@ -150,10 +137,6 @@ export const useEditHistory = (): UseEditHistoryReturn => {
     currentIndexRef.current += 1;
     const nextState = historyRef.current[currentIndexRef.current];
     
-    console.log(`↪️ [History] REDO executado: "${nextState?.description}"`, { 
-      novoIndex: currentIndexRef.current, 
-      total: historyRef.current.length 
-    });
     
     triggerUpdate();
     

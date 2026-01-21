@@ -32,7 +32,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Basic token validation
         const parts = token.split('.');
         if (parts.length !== 3) {
-          console.warn('Invalid token format');
           localStorage.removeItem('token');
           return null;
         }
@@ -43,20 +42,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const decodedPayload = atob(parts[1]);
           payload = JSON.parse(decodedPayload);
         } catch (parseError) {
-          console.error('Failed to parse token payload:', parseError);
           localStorage.removeItem('token');
           return null;
         }
 
         if (payload.exp && payload.exp < Date.now() / 1000) {
-          console.warn('Token expired');
           localStorage.removeItem('token');
           return null;
         }
 
         return token;
       } catch (error) {
-        console.error('Error reading token:', error);
         localStorage.removeItem('token');
         return null;
       }
@@ -73,7 +69,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Store in localStorage (persists across sessions)
         localStorage.setItem('token', token);
       } catch (error) {
-        console.error('Error storing token:', error);
         throw error;
       }
     },

@@ -36,23 +36,7 @@ export const useCloneState = () => {
   }, []);
 
   const updateIntegration = useCallback((key: keyof AppState, value: string | boolean) => {
-    console.log('🔵 [updateIntegration]', key, '=', value);
-    setState(prev => {
-      const newState = { ...prev, [key]: value };
-      console.log('🔵 [updateIntegration] novo estado:', {
-        pixelId: newState.pixelId,
-        pixelEnabled: newState.pixelEnabled,
-        gtagId: newState.gtagId,
-        gtagEnabled: newState.gtagEnabled,
-        utmfyCode: newState.utmfyCode,
-        utmfyEnabled: newState.utmfyEnabled,
-        clarityId: newState.clarityId,
-        clarityEnabled: newState.clarityEnabled,
-        whatsappNumber: newState.whatsappNumber,
-        whatsappEnabled: newState.whatsappEnabled
-      });
-      return newState;
-    });
+    setState(prev => ({ ...prev, [key]: value }));
   }, []);
 
   return {
