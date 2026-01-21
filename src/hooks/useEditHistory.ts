@@ -80,7 +80,6 @@ export const useEditHistory = (): UseEditHistoryReturn => {
     // Verificar se é diferente do último estado
     const lastState = historyRef.current[currentIndexRef.current];
     if (lastState && lastState.html === html) {
-      console.log('⏸️ [History] HTML idêntico - skip');
       return;
     }
 
