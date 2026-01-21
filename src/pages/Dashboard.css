@@ -249,12 +249,18 @@
   text-overflow: ellipsis;
 }
 
+.sidebar-user-expires {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
 .sidebar-user-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1.5rem;
-  margin-top: 0.25rem;
+  margin-top: 0.125rem;
 }
 
 .sidebar-user-profile,

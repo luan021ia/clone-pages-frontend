@@ -175,12 +175,15 @@ class AuthService {
     email: string,
     password: string,
     licenseDays: number = 365,
-    role: 'user' | 'admin' = 'user'
+    role: 'user' | 'admin' = 'user',
+    name?: string,
+    cpf?: string,
+    phone?: string
   ): Promise<User> {
     const response = await fetch(API_ENDPOINTS.USERS, {
       method: 'POST',
       headers: this.getHeaders(),
-      body: JSON.stringify({ email, password, licenseDays, role }),
+      body: JSON.stringify({ email, password, licenseDays, role, name, cpf, phone }),
     });
 
     if (!response.ok) {
@@ -192,7 +195,16 @@ class AuthService {
     return data.user;
   }
 
-  async updateUser(userId: string, updates: { email?: string; role?: 'user' | 'admin' }): Promise<User> {
+  async updateUser(
+    userId: string, 
+    updates: { 
+      name?: string;
+      email?: string; 
+      role?: 'user' | 'admin';
+      cpf?: string;
+      phone?: string;
+    }
+  ): Promise<User> {
     const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}`, {
       method: 'PUT',
       headers: this.getHeaders(),

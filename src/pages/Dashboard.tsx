@@ -16,6 +16,8 @@ import { useExpandButton } from '../hooks/useExpandButton';
 import { ExportModal } from '../components/features/export/ExportModal';
 import { CLONING_STATUS, SUCCESS_STATUS } from '../constants/app.constants';
 import { Copy, Download, Package } from 'lucide-react';
+import { authService } from '../services/authService';
+import type { LicenseInfo } from '../services/authService';
 import './Dashboard.css';
 
 export const Dashboard: React.FC = () => {
@@ -79,6 +81,10 @@ export const Dashboard: React.FC = () => {
 
   // Estado para sidebar recolhível (aberta por padrão)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  // Estado para licença do usuário
+  const [userLicense, setUserLicense] = useState<LicenseInfo | null>(null);
+  const [loadingLicense, setLoadingLicense] = useState(false);
 
   // 📦 Estado para Export Modal
   const [showExportModal, setShowExportModal] = useState(false);
@@ -223,6 +229,27 @@ export const Dashboard: React.FC = () => {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showHistory, showPixelHistory, showGtagHistory, showUtmfyHistory, showClarityHistory, showWhatsappHistory]);
+
+  // Carregar licença do usuário
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    const loadLicense = async () => {
+      try {
+        setLoadingLicense(true);
+        const license = await authService.getUserLicense(user.id);
+        setUserLicense(license || null);
+      } catch (error) {
+        // Silencioso - admin ou usuário sem licença não precisa mostrar erro
+        console.warn('Não foi possível carregar licença:', error);
+        setUserLicense(null);
+      } finally {
+        setLoadingLicense(false);
+      }
+    };
+    
+    loadLicense();
+  }, [user?.id]);
 
   // Adicionar valor ao histórico (máximo 5 itens)
   const addToHistory = (value: string, history: string[], setHistory: (h: string[]) => void) => {
@@ -1843,6 +1870,14 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
               {!isSidebarCollapsed && (
                 <div className='sidebar-user-info'>
                   <span className='sidebar-user-email'>{user?.email}</span>
+                  {userLicense?.expiresAt && (
+                    <span className='sidebar-user-expires'>
+                      {userLicense.status === 'expired' || userLicense.status === 'inactive' 
+                        ? `Vencida em: ${new Date(userLicense.expiresAt).toLocaleDateString('pt-BR')}`
+                        : `Vence em: ${new Date(userLicense.expiresAt).toLocaleDateString('pt-BR')}`
+                      }
+                    </span>
+                  )}
                   <div className='sidebar-user-actions'>
                     <button className='sidebar-user-profile' onClick={() => setShowProfileModal(true)}>
                       Senha
