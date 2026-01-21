@@ -71,6 +71,12 @@ export const Dashboard: React.FC = () => {
   // Estado para loading durante download
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // Estado para modal de perfil do usuário
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileNewPassword, setProfileNewPassword] = useState('');
+  const [profileConfirmPassword, setProfileConfirmPassword] = useState('');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
   // Estado para sidebar recolhível (aberta por padrão)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -1468,6 +1474,56 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
     injectTrackingCodesLocally, // ✅ Função de injeção local
   ]);
 
+  // 👤 Funções do Modal de Perfil
+  useEffect(() => {
+    if (showProfileModal) {
+      setProfileNewPassword('');
+      setProfileConfirmPassword('');
+    }
+  }, [showProfileModal]);
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!profileNewPassword) {
+      alert('Digite a nova senha');
+      return;
+    }
+
+    if (profileNewPassword !== profileConfirmPassword) {
+      alert('As senhas não coincidem');
+      return;
+    }
+
+    if (profileNewPassword.length < 6) {
+      alert('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    setIsUpdatingProfile(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      
+      await fetch(`${API_BASE_URL}/users/${user?.id}/password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ password: profileNewPassword })
+      });
+
+      alert('Senha atualizada com sucesso!');
+      setShowProfileModal(false);
+    } catch (error) {
+      console.error('Erro ao atualizar senha:', error);
+      alert('Erro ao atualizar senha');
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
   return (
     <div className='dashboard'>
       {/* Header removido - agora tudo está na sidebar */}
@@ -1787,9 +1843,14 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
               {!isSidebarCollapsed && (
                 <div className='sidebar-user-info'>
                   <span className='sidebar-user-email'>{user?.email}</span>
-                  <button className='sidebar-user-logout' onClick={logout}>
-                    Sair
-                  </button>
+                  <div className='sidebar-user-actions'>
+                    <button className='sidebar-user-profile' onClick={() => setShowProfileModal(true)}>
+                      Senha
+                    </button>
+                    <button className='sidebar-user-logout' onClick={logout}>
+                      Sair
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -2156,6 +2217,117 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       {/* Botão de Suporte via WhatsApp - fixo no inferior esquerdo do Dashboard */}
       {/* Desaparece quando modo editor está ativado para evitar conflitos */}
       {/* WhatsApp agora está dentro da sidebar */}
+
+      {/* Modal de Perfil do Usuário */}
+      {showProfileModal && (
+        <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px' }}>
+            <div className="modal-header">
+              <h3>Meu Perfil</h3>
+              <button className="modal-close" onClick={() => setShowProfileModal(false)}>✕</button>
+            </div>
+
+            <form onSubmit={handleUpdatePassword} className="modal-form">
+              <div className="form-divider">Dados Pessoais</div>
+
+              {/* Layout em 2 colunas */}
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Nome</label>
+                  <input
+                    type="text"
+                    value={user?.name || 'Não informado'}
+                    disabled
+                    className="input-readonly"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>E-mail</label>
+                  <input
+                    type="email"
+                    value={user?.email || ''}
+                    disabled
+                    className="input-readonly"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>CPF</label>
+                  <input
+                    type="text"
+                    value={user?.cpf || 'Não informado'}
+                    disabled
+                    className="input-readonly"
+                  />
+                  <small style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px', display: 'block' }}>
+                    CPF vinculado à compra (anti-pirataria)
+                  </small>
+                </div>
+
+                <div className="form-group">
+                  <label>Telefone</label>
+                  <input
+                    type="text"
+                    value={user?.phone || 'Não informado'}
+                    disabled
+                    className="input-readonly"
+                  />
+                  <small style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px', display: 'block' }}>
+                    Telefone vinculado à compra
+                  </small>
+                </div>
+              </div>
+
+              <div className="form-divider">Alterar Senha</div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="profile-new-password">Nova Senha</label>
+                  <input
+                    id="profile-new-password"
+                    type="password"
+                    value={profileNewPassword}
+                    onChange={(e) => setProfileNewPassword(e.target.value)}
+                    placeholder="Mínimo 6 caracteres"
+                    disabled={isUpdatingProfile}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="profile-confirm-password">Confirmar Nova Senha</label>
+                  <input
+                    id="profile-confirm-password"
+                    type="password"
+                    value={profileConfirmPassword}
+                    onChange={(e) => setProfileConfirmPassword(e.target.value)}
+                    placeholder="Digite a senha novamente"
+                    disabled={isUpdatingProfile}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => setShowProfileModal(false)}
+                  disabled={isUpdatingProfile}
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-submit" disabled={isUpdatingProfile}>
+                  {isUpdatingProfile ? 'Salvando...' : 'Salvar Alterações'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

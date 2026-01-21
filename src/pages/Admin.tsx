@@ -36,6 +36,7 @@ export const Admin: React.FC = () => {
   const [editPassword, setEditPassword] = useState('');
   const [editRole, setEditRole] = useState<'user' | 'admin'>('user');
   const [renewDays, setRenewDays] = useState('365');
+  const [setDaysManual, setSetDaysManual] = useState('365');
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
@@ -232,6 +233,29 @@ export const Admin: React.FC = () => {
     }
   };
 
+  const handleSetLicenseDays = async () => {
+    if (!editingUser) return;
+
+    const days = parseInt(setDaysManual);
+    if (isNaN(days) || days < 0) {
+      alert('Digite um número válido de dias (0 ou mais)');
+      return;
+    }
+
+    setUpdating(true);
+
+    try {
+      await authService.setUserLicenseDays(editingUser.id, days);
+      alert(`Licença definida para ${days} dias a partir de agora!`);
+      setShowEditModal(false);
+      await loadUsers();
+    } catch (err: any) {
+      alert(err.message || 'Erro ao definir dias de licença');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const handleDeleteUser = async (userId: string) => {
     if (!confirm('Tem certeza que deseja deletar este usuário?')) {
       return;
@@ -354,8 +378,10 @@ export const Admin: React.FC = () => {
                 <table className="users-table">
                   <thead>
                     <tr>
-                      <th>ID</th>
+                      <th>Nome</th>
                       <th>E-mail</th>
+                      <th>CPF</th>
+                      <th>Telefone</th>
                       <th>Role</th>
                       <th>Status da Licença</th>
                       <th>Expira em</th>
@@ -366,8 +392,10 @@ export const Admin: React.FC = () => {
                   <tbody>
                     {users && users.length > 0 && users.map((u) => (
                       <tr key={u.id}>
-                        <td>{u.id}</td>
+                        <td>{u.name || '-'}</td>
                         <td>{u.email}</td>
+                        <td>{u.cpf || '-'}</td>
+                        <td>{u.phone || '-'}</td>
                         <td>
                           <span className={`role-badge role-${u.role}`}>
                             {u.role === 'admin' ? 'Admin' : 'User'}
@@ -530,107 +558,170 @@ export const Admin: React.FC = () => {
             </div>
 
             <form onSubmit={handleUpdateUser} className="modal-form">
-              <div className="user-info-badge">
-                <strong>Usuário #{editingUser.id}</strong>
-                {editingUser.license && (
-                  <span style={{ marginLeft: '12px' }}>
-                    {getLicenseStatusBadge(editingUser.license)}
-                  </span>
-                )}
+              {/* Cabeçalho com Status */}
+              <div className="user-info-header">
+                <div className="user-info-badge">
+                  <strong>{editingUser.name || 'Sem nome'}</strong>
+                  {editingUser.license && getLicenseStatusBadge(editingUser.license)}
+                </div>
+                <div className="user-info-dates">
+                  {editingUser.license?.expiresAt && (
+                    <span className="expiry-info">
+                      Expira em: <strong>{formatDate(editingUser.license.expiresAt)}</strong>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="form-divider">Dados Pessoais</div>
+
+              {/* Layout em 2 colunas */}
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="edit-email">E-mail</label>
+                  <input
+                    id="edit-email"
+                    type="email"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    disabled={updating}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="edit-role">Tipo de Usuário</label>
+                  <select
+                    id="edit-role"
+                    value={editRole}
+                    onChange={(e) => setEditRole(e.target.value as 'user' | 'admin')}
+                    disabled={updating}
+                    className="form-select"
+                  >
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>CPF</label>
+                  <input
+                    type="text"
+                    value={editingUser.cpf || 'Não informado'}
+                    disabled
+                    className="input-readonly"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Telefone</label>
+                  <input
+                    type="text"
+                    value={editingUser.phone || 'Não informado'}
+                    disabled
+                    className="input-readonly"
+                  />
+                </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="edit-email">E-mail</label>
-                <input
-                  id="edit-email"
-                  type="email"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                  disabled={updating}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="edit-password">Nova Senha (deixe vazio para não alterar)</label>
+                <label htmlFor="edit-password">Nova Senha (opcional)</label>
                 <input
                   id="edit-password"
                   type="password"
                   value={editPassword}
                   onChange={(e) => setEditPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Deixe vazio para não alterar"
                   disabled={updating}
                 />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="edit-role">Tipo de Usuário</label>
-                <select
-                  id="edit-role"
-                  value={editRole}
-                  onChange={(e) => setEditRole(e.target.value as 'user' | 'admin')}
-                  disabled={updating}
-                  className="form-select"
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
+              <div className="form-divider">Gerenciamento de Licença</div>
+
+              {/* Ações de Licença em Grid */}
+              <div className="license-actions-grid">
+                {/* Definir Dias Manualmente */}
+                <div className="license-action-card">
+                  <label htmlFor="set-days">Definir dias exatos</label>
+                  <div className="input-button-group">
+                    <input
+                      type="number"
+                      id="set-days"
+                      value={setDaysManual}
+                      onChange={(e) => setSetDaysManual(e.target.value)}
+                      disabled={updating}
+                      className="form-input"
+                      min="0"
+                      placeholder="Ex: 365"
+                    />
+                    <button
+                      type="button"
+                      className="btn-set-days"
+                      onClick={handleSetLicenseDays}
+                      disabled={updating}
+                    >
+                      ✅ Definir
+                    </button>
+                  </div>
+                  <small>Define licença a partir de hoje</small>
+                </div>
+
+                {/* Renovar/Adicionar Dias */}
+                <div className="license-action-card">
+                  <label htmlFor="renew-days">Adicionar dias</label>
+                  <div className="input-button-group">
+                    <select
+                      id="renew-days"
+                      value={renewDays}
+                      onChange={(e) => setRenewDays(e.target.value)}
+                      disabled={updating}
+                      className="form-select"
+                    >
+                      <option value="7">7 dias</option>
+                      <option value="30">30 dias</option>
+                      <option value="90">90 dias</option>
+                      <option value="180">180 dias</option>
+                      <option value="365">365 dias</option>
+                      <option value="730">730 dias</option>
+                    </select>
+                    <button
+                      type="button"
+                      className="btn-renew"
+                      onClick={handleRenewLicense}
+                      disabled={updating}
+                    >
+                      🔄 Renovar
+                    </button>
+                  </div>
+                  <small>Adiciona à licença atual</small>
+                </div>
               </div>
 
-              <div className="form-divider">Renovar Licença</div>
-
-              <div className="form-group">
-                <label htmlFor="renew-days">Adicionar dias à licença</label>
-                <select
-                  id="renew-days"
-                  value={renewDays}
-                  onChange={(e) => setRenewDays(e.target.value)}
-                  disabled={updating}
-                  className="form-select"
-                >
-                  <option value="7">7 dias</option>
-                  <option value="30">30 dias (1 mês)</option>
-                  <option value="90">90 dias (3 meses)</option>
-                  <option value="180">180 dias (6 meses)</option>
-                  <option value="365">365 dias (1 ano)</option>
-                  <option value="730">730 dias (2 anos)</option>
-                </select>
-                <button
-                  type="button"
-                  className="btn-renew"
-                  onClick={handleRenewLicense}
-                  disabled={updating}
-                  style={{ marginTop: '8px' }}
-                >
-                  🔄 Renovar Licença
-                </button>
-
-                {/* Botão de Desativar/Reativar baseado no status */}
-                {editingUser.license && editingUser.license.status !== 'admin' && (
-                  <>
-                    {editingUser.license.isActive ? (
-                      <button
-                        type="button"
-                        className="btn-deactivate"
-                        onClick={handleDeactivateLicense}
-                        disabled={updating}
-                        style={{ marginTop: '8px' }}
-                      >
-                        🚫 Desativar Licença
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn-reactivate"
-                        onClick={handleReactivateLicense}
-                        disabled={updating}
-                        style={{ marginTop: '8px' }}
-                      >
-                        ✅ Reativar Licença
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
+              {/* Botões de Ação (Desativar/Reativar) */}
+              {editingUser.license && editingUser.license.status !== 'admin' && (
+                <div className="license-toggle-actions">
+                  {editingUser.license.isActive ? (
+                    <button
+                      type="button"
+                      className="btn-deactivate"
+                      onClick={handleDeactivateLicense}
+                      disabled={updating}
+                    >
+                      🚫 Desativar Licença
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn-reactivate"
+                      onClick={handleReactivateLicense}
+                      disabled={updating}
+                    >
+                      ✅ Reativar Licença ({renewDays} dias)
+                    </button>
+                  )}
+                </div>
+              )}
 
               <div className="modal-actions">
                 <button

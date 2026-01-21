@@ -249,6 +249,15 @@
   text-overflow: ellipsis;
 }
 
+.sidebar-user-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.sidebar-user-profile,
 .sidebar-user-logout {
   font-size: 11px;
   color: var(--accent-cyan);
@@ -261,6 +270,7 @@
   transition: color 0.2s ease;
 }
 
+.sidebar-user-profile:hover,
 .sidebar-user-logout:hover {
   color: var(--primary-blue);
   text-decoration: underline;

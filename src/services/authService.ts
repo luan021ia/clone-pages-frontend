@@ -5,6 +5,8 @@ export interface User {
   name: string;
   email: string;
   role: 'user' | 'admin';
+  cpf?: string;
+  phone?: string;
   createdAt: string;
   created_at?: string; // Backward compatibility
   updatedAt?: string;
@@ -281,6 +283,22 @@ class AuthService {
 
     const data = await response.json();
     // Backend retorna direto, não wrapped
+    return data.license || data;
+  }
+
+  async setUserLicenseDays(userId: string, days: number): Promise<LicenseInfo> {
+    const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}/license/days`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ days }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to set license days');
+    }
+
+    const data = await response.json();
     return data.license || data;
   }
 }
