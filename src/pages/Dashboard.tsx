@@ -230,7 +230,7 @@ export const Dashboard: React.FC = () => {
   // Carregar licença do usuário
   useEffect(() => {
     if (!user?.id) return;
-    
+
     const loadLicense = async () => {
       try {
         setLoadingLicense(true);
@@ -243,7 +243,7 @@ export const Dashboard: React.FC = () => {
         setLoadingLicense(false);
       }
     };
-    
+
     loadLicense();
   }, [user?.id]);
 
@@ -347,7 +347,7 @@ export const Dashboard: React.FC = () => {
     whatsappNumber?: string;
   }): string => {
     let injections = '';
-    
+
     // Meta Pixel
     if (options.pixelId) {
       injections += `
@@ -370,7 +370,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 <!-- End Meta Pixel Code -->
 `;
     }
-    
+
     // Google Tag Manager
     if (options.gtagId) {
       injections += `
@@ -385,7 +385,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 <!-- End Google tag -->
 `;
     }
-    
+
     // Microsoft Clarity
     if (options.clarityId) {
       injections += `
@@ -400,12 +400,12 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 <!-- End Microsoft Clarity -->
 `;
     }
-    
+
     // UTMFY
     if (options.utmfyCode) {
       injections += `<script data-tuglet="true" data-utmfy-wrapper="true">\n${options.utmfyCode}\n</script>`;
     }
-    
+
     // WhatsApp Button
     if (options.whatsappNumber) {
       injections += `
@@ -448,29 +448,29 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 <!-- End WhatsApp Button -->
 `;
     }
-    
+
     // 🧹 SEMPRE remover códigos antigos PRIMEIRO (independente se vai injetar novos)
     let cleanedHtml = html.replace(/<!-- Meta Pixel Code \(Tuglet\) -->[\s\S]*?<!-- End Meta Pixel Code -->/g, '');
     cleanedHtml = cleanedHtml.replace(/<!-- Google tag \(gtag\.js\) \(Tuglet\) -->[\s\S]*?<!-- End Google tag -->/g, '');
     cleanedHtml = cleanedHtml.replace(/<!-- Microsoft Clarity \(Tuglet\) -->[\s\S]*?<!-- End Microsoft Clarity -->/g, '');
     cleanedHtml = cleanedHtml.replace(/<!-- WhatsApp Button \(Tuglet\) -->[\s\S]*?<!-- End WhatsApp Button -->/g, '');
     cleanedHtml = cleanedHtml.replace(/<script data-tuglet="true" data-utmfy-wrapper="true">[\s\S]*?<\/script>/g, '');
-    
+
     // Se não tem nada para injetar, retornar HTML limpo (sem códigos)
     if (!injections) {
       return cleanedHtml;
     }
-    
+
     // Injetar antes do </head>
     if (cleanedHtml.includes('</head>')) {
       return cleanedHtml.replace('</head>', `${injections}\n</head>`);
     }
-    
+
     // Se não tem </head>, injetar antes do </body>
     if (cleanedHtml.includes('</body>')) {
       return cleanedHtml.replace('</body>', `${injections}\n</body>`);
     }
-    
+
     // Fallback: adicionar no final
     return cleanedHtml + injections;
   }, []);
@@ -505,8 +505,8 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
   // Hook para gerenciar expansão do preview
   const { isExpanded, expand: expandPreview, collapse: collapsePreview } = useExpandButton({
     initialExpanded: false,
-    onExpand: () => {},
-    onCollapse: () => {},
+    onExpand: () => { },
+    onCollapse: () => { },
     enabled: state.editMode,
     storageKey: 'clonepages-expand-state',
   });
@@ -617,7 +617,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
           if (iframeOrigin && event.origin === iframeOrigin) {
             fromCurrentIframe = true;
           }
-        } catch {}
+        } catch { }
       }
 
       if (!fromCurrentIframe) {
@@ -888,10 +888,10 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         // 🎯 CONSTRUIR URL COM OS MESMOS PARAMETROS DO IFRAME ATUAL
         const hasCustomCodes = Boolean(
           (state.pixelId && state.pixelEnabled) ||
-            (state.gtagId && state.gtagEnabled) ||
-            (state.whatsappNumber && state.whatsappEnabled) ||
-            (state.clarityId && state.clarityEnabled) ||
-            (state.utmfyCode && state.utmfyEnabled)
+          (state.gtagId && state.gtagEnabled) ||
+          (state.whatsappNumber && state.whatsappEnabled) ||
+          (state.clarityId && state.clarityEnabled) ||
+          (state.utmfyCode && state.utmfyEnabled)
         );
 
         const copyUrl = buildRenderPageUrl(state.url, {
@@ -1061,10 +1061,10 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 
         // Se algum código foi removido incorretamente, avisar o usuário
         if ((hadPixelBefore && !hasPixelAfter) ||
-            (hadGtagBefore && !hasGtagAfter) ||
-            (hadClarityBefore && !hasClarityAfter) ||
-            (hadUtmfyBefore && !hasUtmfyAfter) ||
-            (hadWhatsAppBefore && !hasWhatsAppAfter)) {
+          (hadGtagBefore && !hasGtagAfter) ||
+          (hadClarityBefore && !hasClarityAfter) ||
+          (hadUtmfyBefore && !hasUtmfyAfter) ||
+          (hadWhatsAppBefore && !hasWhatsAppAfter)) {
 
           showFeedback('⚠️ Aviso: Alguns códigos foram removidos durante o processamento. Verifique o arquivo!', 'warning');
         }
@@ -1126,10 +1126,10 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
   const buildUrlForEditMode = useCallback(() => {
     const hasCustomCodes = Boolean(
       (state.pixelId && state.pixelEnabled) ||
-        (state.gtagId && state.gtagEnabled) ||
-        (state.whatsappNumber && state.whatsappEnabled) ||
-        (state.clarityId && state.clarityEnabled) ||
-        (state.utmfyCode && state.utmfyEnabled)
+      (state.gtagId && state.gtagEnabled) ||
+      (state.whatsappNumber && state.whatsappEnabled) ||
+      (state.clarityId && state.clarityEnabled) ||
+      (state.utmfyCode && state.utmfyEnabled)
     );
 
     return buildRenderPageUrl(state.url, {
@@ -1221,32 +1221,32 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         utmfyCode: state.utmfyCode && state.utmfyEnabled ? state.utmfyCode : undefined,
         whatsappNumber: state.whatsappNumber && state.whatsappEnabled ? state.whatsappNumber : undefined,
       };
-      
+
       // Verificar se os códigos já estão presentes para evitar loop infinito
       const pixelPresent = trackingOptions.pixelId ? savedEditedHtml.includes(trackingOptions.pixelId) : true;
       const gtagPresent = trackingOptions.gtagId ? savedEditedHtml.includes(trackingOptions.gtagId) : true;
       const clarityPresent = trackingOptions.clarityId ? savedEditedHtml.includes(trackingOptions.clarityId) : true;
       const whatsappPresent = trackingOptions.whatsappNumber ? savedEditedHtml.includes(trackingOptions.whatsappNumber) : true;
-      
+
       // Verificar se códigos precisam ser REMOVIDOS (toggle desativado mas código ainda presente)
       const needsRemovePixel = !trackingOptions.pixelId && savedEditedHtml.includes('<!-- Meta Pixel Code (Tuglet) -->');
       const needsRemoveGtag = !trackingOptions.gtagId && savedEditedHtml.includes('<!-- Google tag (gtag.js) (Tuglet) -->');
       const needsRemoveClarity = !trackingOptions.clarityId && savedEditedHtml.includes('<!-- Microsoft Clarity (Tuglet) -->');
       const needsRemoveWhatsapp = !trackingOptions.whatsappNumber && savedEditedHtml.includes('<!-- WhatsApp Button (Tuglet) -->');
       const needsRemoveUtmfy = !trackingOptions.utmfyCode && savedEditedHtml.includes('data-utmfy-wrapper="true"');
-      
+
       const allCodesPresent = pixelPresent && gtagPresent && clarityPresent && whatsappPresent;
       const needsRemoval = needsRemovePixel || needsRemoveGtag || needsRemoveClarity || needsRemoveWhatsapp || needsRemoveUtmfy;
-      
+
       if (!allCodesPresent || needsRemoval) {
         const htmlWithCodes = injectTrackingCodesLocally(savedEditedHtml, trackingOptions);
-        
+
         // Só atualizar se realmente mudou (evita loop infinito)
         if (htmlWithCodes !== savedEditedHtml) {
           setSavedEditedHtml(htmlWithCodes);
         }
       }
-      
+
       return;
     }
 
@@ -1263,10 +1263,10 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
     // 🎯 NOVA LÓGICA: Determinar parâmetros para /render-page
     const hasCustomCodes = Boolean(
       (state.pixelId && state.pixelEnabled) ||
-        (state.gtagId && state.gtagEnabled) ||
-        (state.whatsappNumber && state.whatsappEnabled) ||
-        (state.clarityId && state.clarityEnabled) ||
-        (state.utmfyCode && state.utmfyEnabled)
+      (state.gtagId && state.gtagEnabled) ||
+      (state.whatsappNumber && state.whatsappEnabled) ||
+      (state.clarityId && state.clarityEnabled) ||
+      (state.utmfyCode && state.utmfyEnabled)
     );
 
     // Construir URL do novo endpoint /render-page
@@ -1343,7 +1343,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 
     try {
       const token = localStorage.getItem('token');
-      
+
       await fetch(`${API_BASE_URL}/users/${user?.id}/password`, {
         method: 'PUT',
         headers: {
@@ -1371,338 +1371,338 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         {/* Sidebar Condicional: Normal ou Editor */}
         {!state.editMode && (
           <div className={`dashboard-sidebar ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-          {/* Toggle Button - Novo Design */}
-          <div
-            title={isSidebarCollapsed ? 'Expandir área de códigos' : 'Recolher área de códigos'}
-            style={{ cursor: 'pointer', display: 'inline-block' }}
-          >
-          <svg 
-            className='sidebar-toggle-btn'
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none"
-            style={{ cursor: 'pointer' }}
-          >
-            {isSidebarCollapsed ? (
-              // Setas apontando para direita (expandir)
-              <>
-                <path d="M10 18L16 12L10 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M4 18L10 12L4 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </>
-            ) : (
-              // Setas apontando para esquerda (recolher)
-              <>
-                <path d="M14 18L8 12L14 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M20 18L14 12L20 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </>
-            )}
-          </svg>
-          </div>
-
-          {/* Logo no Topo */}
-          <div className='sidebar-logo'>
-            <img src='/spycopy-logo.png' alt='CLONE PAGES' className='sidebar-logo-img' />
-            {!isSidebarCollapsed && <span className='sidebar-logo-text'>CLONE PAGES</span>}
-          </div>
-
-          {/* Integrações (Centro) */}
-          <div className='sidebar-integrations'>
-          <div className='integration-group pixel-group'>
-            <div className='integration-header'>
-              <label>Pixel Meta</label>
-              <ToggleSwitch
-                checked={state.pixelEnabled}
-                onChange={(checked: boolean) =>
-                  updateIntegration('pixelEnabled', checked)
-                }
-                size='medium'
-                disabled={state.editMode}
-              />
-            </div>
-            <input
-              type='text'
-              placeholder='Insira o ID do Pixel'
-              value={state.pixelId}
-              onChange={(e) => {
-                updateIntegration('pixelId', e.target.value);
-              }}
-              onFocus={() => setShowPixelHistory(true)}
-              className='integration-input'
-              disabled={!state.pixelEnabled || state.editMode}
-            />
-            {showPixelHistory && pixelHistory.length > 0 && (
-              <div className='history-dropdown'>
-                {pixelHistory.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className='history-item'
-                    onClick={() => {
-                      updateIntegration('pixelId', item);
-                      setShowPixelHistory(false);
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            )}
-            {state.pixelEnabled && !state.pixelId && (
-              <div className='integration-warning'>
-                ⚠️ Insira o ID do Pixel para funcionar
-              </div>
-            )}
-          </div>
-
-          <div className='integration-group gtag-group'>
-            <div className='integration-header'>
-              <label>Google Tag</label>
-              <ToggleSwitch
-                checked={state.gtagEnabled}
-                onChange={(checked: boolean) =>
-                  updateIntegration('gtagEnabled', checked)
-                }
-                size='medium'
-                disabled={state.editMode}
-              />
-            </div>
-            <input
-              type='text'
-              placeholder='Insira a Tag do Google'
-              value={state.gtagId}
-              onChange={(e) => {
-                updateIntegration('gtagId', e.target.value);
-              }}
-              onFocus={() => setShowGtagHistory(true)}
-              className='integration-input'
-              disabled={!state.gtagEnabled || state.editMode}
-            />
-            {showGtagHistory && gtagHistory.length > 0 && (
-              <div className='history-dropdown'>
-                {gtagHistory.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className='history-item'
-                    onClick={() => {
-                      updateIntegration('gtagId', item);
-                      setShowGtagHistory(false);
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            )}
-            {state.gtagEnabled && !state.gtagId && (
-              <div className='integration-warning'>
-                ⚠️ Insira a Tag do Google para funcionar
-              </div>
-            )}
-          </div>
-
-          <div className='integration-group utmfy-group'>
-            <div className='integration-header'>
-              <label>UTMFY</label>
-              <ToggleSwitch
-                checked={state.utmfyEnabled}
-                onChange={(checked: boolean) =>
-                  updateIntegration('utmfyEnabled', checked)
-                }
-                size='medium'
-                disabled={state.editMode}
-              />
-            </div>
-            <input
-              type='text'
-              placeholder='Insira o código UTMFY'
-              value={state.utmfyCode}
-              onChange={(e) => {
-                updateIntegration('utmfyCode', e.target.value);
-              }}
-              onFocus={() => setShowUtmfyHistory(true)}
-              className='integration-input'
-              disabled={!state.utmfyEnabled || state.editMode}
-            />
-            {showUtmfyHistory && utmfyHistory.length > 0 && (
-              <div className='history-dropdown'>
-                {utmfyHistory.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className='history-item'
-                    onClick={() => {
-                      updateIntegration('utmfyCode', item);
-                      setShowUtmfyHistory(false);
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            )}
-            {state.utmfyEnabled && !state.utmfyCode && (
-              <div className='integration-warning'>
-                ⚠️ Insira o código UTMFY para funcionar
-              </div>
-            )}
-          </div>
-
-          <div className='integration-group clarity-group'>
-            <div className='integration-header'>
-              <label>Microsoft Clarity</label>
-              <ToggleSwitch
-                checked={state.clarityEnabled}
-                onChange={(checked: boolean) =>
-                  updateIntegration('clarityEnabled', checked)
-                }
-                size='medium'
-                disabled={state.editMode}
-              />
-            </div>
-            <input
-              type='text'
-              placeholder='Insira o ID do Clarity'
-              value={state.clarityId}
-              onChange={(e) => {
-                updateIntegration('clarityId', e.target.value);
-              }}
-              onFocus={() => setShowClarityHistory(true)}
-              className='integration-input'
-              disabled={!state.clarityEnabled || state.editMode}
-            />
-            {showClarityHistory && clarityHistory.length > 0 && (
-              <div className='history-dropdown'>
-                {clarityHistory.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className='history-item'
-                    onClick={() => {
-                      updateIntegration('clarityId', item);
-                      setShowClarityHistory(false);
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            )}
-            {state.clarityEnabled && !state.clarityId && (
-              <div className='integration-warning'>
-                ⚠️ Insira o ID do Clarity para funcionar
-              </div>
-            )}
-          </div>
-
-          <div className='integration-group whatsapp-group'>
-            <div className='integration-header'>
-              <label>Botão WhatsApp</label>
-              <ToggleSwitch
-                checked={state.whatsappEnabled}
-                onChange={(checked: boolean) =>
-                  updateIntegration('whatsappEnabled', checked)
-                }
-                size='medium'
-                disabled={state.editMode}
-              />
-            </div>
-            <input
-              type='text'
-              placeholder='EX: 5521999999999'
-              value={state.whatsappNumber}
-              onChange={(e) => {
-                updateIntegration('whatsappNumber', e.target.value);
-              }}
-              onFocus={() => setShowWhatsappHistory(true)}
-              className='integration-input'
-              disabled={!state.whatsappEnabled || state.editMode}
-            />
-            {showWhatsappHistory && whatsappHistory.length > 0 && (
-              <div className='history-dropdown'>
-                {whatsappHistory.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className='history-item'
-                    onClick={() => {
-                      updateIntegration('whatsappNumber', item);
-                      setShowWhatsappHistory(false);
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            )}
-            {state.whatsappEnabled && !state.whatsappNumber && (
-              <div className='integration-warning'>
-                ⚠️ Insira o número do WhatsApp para funcionar
-              </div>
-            )}
-          </div>
-          </div>
-
-          {/* Rodapé da Sidebar: WhatsApp + Botão Admin + Usuário */}
-          <div className='sidebar-footer'>
-            {/* Botão WhatsApp - Apenas para usuários não-admin */}
-            {!isAdmin && (
-              <button 
-                className='sidebar-whatsapp-btn'
-                onClick={() => {
-                  const whatsappUrl = `https://wa.me/5522981756226?text=${encodeURIComponent('Preciso de suporte para a ferramenta Clone Pages')}`;
-                  window.open(whatsappUrl, '_blank');
-                }}
-                title='Suporte via WhatsApp'
+            {/* Toggle Button - Novo Design */}
+            <div
+              title={isSidebarCollapsed ? 'Expandir área de códigos' : 'Recolher área de códigos'}
+              style={{ cursor: 'pointer', display: 'inline-block' }}
+            >
+              <svg
+                className='sidebar-toggle-btn'
+                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                style={{ cursor: 'pointer' }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
-                </svg>
-                {!isSidebarCollapsed && <span>Suporte WhatsApp</span>}
-              </button>
-            )}
+                {isSidebarCollapsed ? (
+                  // Setas apontando para direita (expandir)
+                  <>
+                    <path d="M10 18L16 12L10 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M4 18L10 12L4 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </>
+                ) : (
+                  // Setas apontando para esquerda (recolher)
+                  <>
+                    <path d="M14 18L8 12L14 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M20 18L14 12L20 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </>
+                )}
+              </svg>
+            </div>
 
-            {/* Botão Admin - Se for admin */}
-            {!isSidebarCollapsed && isAdmin && (
-              <button 
-                className='sidebar-admin-btn'
-                onClick={() => navigate('/admin')}
-                title='Painel Administrativo'
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 15c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z"/>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-                <span>Painel Admin</span>
-              </button>
-            )}
+            {/* Logo no Topo */}
+            <div className='sidebar-logo'>
+              <img src='/spycopy-logo.png' alt='CLONE PAGES' className='sidebar-logo-img' />
+              {!isSidebarCollapsed && <span className='sidebar-logo-text'>CLONE PAGES</span>}
+            </div>
 
-            {/* Info do Usuário - SEMPRE VISÍVEL */}
-            <div className='sidebar-user'>
-              <div className='sidebar-user-avatar'>
-                {user?.email?.charAt(0).toUpperCase()}
-              </div>
-              {!isSidebarCollapsed && (
-                <div className='sidebar-user-info'>
-                  <span className='sidebar-user-email'>{user?.email}</span>
-                  {userLicense?.expiresAt && (
-                    <span className='sidebar-user-expires'>
-                      {userLicense.status === 'expired' || userLicense.status === 'inactive' 
-                        ? `Vencida em: ${new Date(userLicense.expiresAt).toLocaleDateString('pt-BR')}`
-                        : `Vence em: ${new Date(userLicense.expiresAt).toLocaleDateString('pt-BR')}`
-                      }
-                    </span>
-                  )}
-                  <div className='sidebar-user-actions'>
-                    <button className='sidebar-user-profile' onClick={() => setShowProfileModal(true)}>
-                      Senha
-                    </button>
-                    <button className='sidebar-user-logout' onClick={logout}>
-                      Sair
-                    </button>
-                  </div>
+            {/* Integrações (Centro) */}
+            <div className='sidebar-integrations'>
+              <div className='integration-group pixel-group'>
+                <div className='integration-header'>
+                  <label>Pixel Meta</label>
+                  <ToggleSwitch
+                    checked={state.pixelEnabled}
+                    onChange={(checked: boolean) =>
+                      updateIntegration('pixelEnabled', checked)
+                    }
+                    size='medium'
+                    disabled={state.editMode}
+                  />
                 </div>
+                <input
+                  type='text'
+                  placeholder='Insira o ID do Pixel'
+                  value={state.pixelId}
+                  onChange={(e) => {
+                    updateIntegration('pixelId', e.target.value);
+                  }}
+                  onFocus={() => setShowPixelHistory(true)}
+                  className='integration-input'
+                  disabled={!state.pixelEnabled || state.editMode}
+                />
+                {showPixelHistory && pixelHistory.length > 0 && (
+                  <div className='history-dropdown'>
+                    {pixelHistory.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className='history-item'
+                        onClick={() => {
+                          updateIntegration('pixelId', item);
+                          setShowPixelHistory(false);
+                        }}
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {state.pixelEnabled && !state.pixelId && (
+                  <div className='integration-warning'>
+                    ⚠️ Insira o ID do Pixel para funcionar
+                  </div>
+                )}
+              </div>
+
+              <div className='integration-group gtag-group'>
+                <div className='integration-header'>
+                  <label>Google Tag</label>
+                  <ToggleSwitch
+                    checked={state.gtagEnabled}
+                    onChange={(checked: boolean) =>
+                      updateIntegration('gtagEnabled', checked)
+                    }
+                    size='medium'
+                    disabled={state.editMode}
+                  />
+                </div>
+                <input
+                  type='text'
+                  placeholder='Insira a Tag do Google'
+                  value={state.gtagId}
+                  onChange={(e) => {
+                    updateIntegration('gtagId', e.target.value);
+                  }}
+                  onFocus={() => setShowGtagHistory(true)}
+                  className='integration-input'
+                  disabled={!state.gtagEnabled || state.editMode}
+                />
+                {showGtagHistory && gtagHistory.length > 0 && (
+                  <div className='history-dropdown'>
+                    {gtagHistory.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className='history-item'
+                        onClick={() => {
+                          updateIntegration('gtagId', item);
+                          setShowGtagHistory(false);
+                        }}
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {state.gtagEnabled && !state.gtagId && (
+                  <div className='integration-warning'>
+                    ⚠️ Insira a Tag do Google para funcionar
+                  </div>
+                )}
+              </div>
+
+              <div className='integration-group utmfy-group'>
+                <div className='integration-header'>
+                  <label>UTMFY</label>
+                  <ToggleSwitch
+                    checked={state.utmfyEnabled}
+                    onChange={(checked: boolean) =>
+                      updateIntegration('utmfyEnabled', checked)
+                    }
+                    size='medium'
+                    disabled={state.editMode}
+                  />
+                </div>
+                <input
+                  type='text'
+                  placeholder='Insira o código UTMFY'
+                  value={state.utmfyCode}
+                  onChange={(e) => {
+                    updateIntegration('utmfyCode', e.target.value);
+                  }}
+                  onFocus={() => setShowUtmfyHistory(true)}
+                  className='integration-input'
+                  disabled={!state.utmfyEnabled || state.editMode}
+                />
+                {showUtmfyHistory && utmfyHistory.length > 0 && (
+                  <div className='history-dropdown'>
+                    {utmfyHistory.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className='history-item'
+                        onClick={() => {
+                          updateIntegration('utmfyCode', item);
+                          setShowUtmfyHistory(false);
+                        }}
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {state.utmfyEnabled && !state.utmfyCode && (
+                  <div className='integration-warning'>
+                    ⚠️ Insira o código UTMFY para funcionar
+                  </div>
+                )}
+              </div>
+
+              <div className='integration-group clarity-group'>
+                <div className='integration-header'>
+                  <label>Microsoft Clarity</label>
+                  <ToggleSwitch
+                    checked={state.clarityEnabled}
+                    onChange={(checked: boolean) =>
+                      updateIntegration('clarityEnabled', checked)
+                    }
+                    size='medium'
+                    disabled={state.editMode}
+                  />
+                </div>
+                <input
+                  type='text'
+                  placeholder='Insira o ID do Clarity'
+                  value={state.clarityId}
+                  onChange={(e) => {
+                    updateIntegration('clarityId', e.target.value);
+                  }}
+                  onFocus={() => setShowClarityHistory(true)}
+                  className='integration-input'
+                  disabled={!state.clarityEnabled || state.editMode}
+                />
+                {showClarityHistory && clarityHistory.length > 0 && (
+                  <div className='history-dropdown'>
+                    {clarityHistory.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className='history-item'
+                        onClick={() => {
+                          updateIntegration('clarityId', item);
+                          setShowClarityHistory(false);
+                        }}
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {state.clarityEnabled && !state.clarityId && (
+                  <div className='integration-warning'>
+                    ⚠️ Insira o ID do Clarity para funcionar
+                  </div>
+                )}
+              </div>
+
+              <div className='integration-group whatsapp-group'>
+                <div className='integration-header'>
+                  <label>Botão WhatsApp</label>
+                  <ToggleSwitch
+                    checked={state.whatsappEnabled}
+                    onChange={(checked: boolean) =>
+                      updateIntegration('whatsappEnabled', checked)
+                    }
+                    size='medium'
+                    disabled={state.editMode}
+                  />
+                </div>
+                <input
+                  type='text'
+                  placeholder='EX: 5521999999999'
+                  value={state.whatsappNumber}
+                  onChange={(e) => {
+                    updateIntegration('whatsappNumber', e.target.value);
+                  }}
+                  onFocus={() => setShowWhatsappHistory(true)}
+                  className='integration-input'
+                  disabled={!state.whatsappEnabled || state.editMode}
+                />
+                {showWhatsappHistory && whatsappHistory.length > 0 && (
+                  <div className='history-dropdown'>
+                    {whatsappHistory.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className='history-item'
+                        onClick={() => {
+                          updateIntegration('whatsappNumber', item);
+                          setShowWhatsappHistory(false);
+                        }}
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {state.whatsappEnabled && !state.whatsappNumber && (
+                  <div className='integration-warning'>
+                    ⚠️ Insira o número do WhatsApp para funcionar
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Rodapé da Sidebar: WhatsApp + Botão Admin + Usuário */}
+            <div className='sidebar-footer'>
+              {/* Botão WhatsApp - Apenas para usuários não-admin */}
+              {!isAdmin && (
+                <button
+                  className='sidebar-whatsapp-btn'
+                  onClick={() => {
+                    const whatsappUrl = `https://wa.me/5522981756226?text=${encodeURIComponent('Preciso de suporte para a ferramenta Clone Pages')}`;
+                    window.open(whatsappUrl, '_blank');
+                  }}
+                  title='Suporte via WhatsApp'
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+                  </svg>
+                  {!isSidebarCollapsed && <span>Suporte WhatsApp</span>}
+                </button>
               )}
+
+              {/* Botão Admin - Se for admin */}
+              {!isSidebarCollapsed && isAdmin && (
+                <button
+                  className='sidebar-admin-btn'
+                  onClick={() => navigate('/admin')}
+                  title='Painel Administrativo'
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 15c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                  <span>Painel Admin</span>
+                </button>
+              )}
+
+              {/* Info do Usuário - SEMPRE VISÍVEL */}
+              <div className='sidebar-user'>
+                <div className='sidebar-user-avatar'>
+                  {user?.email?.charAt(0).toUpperCase()}
+                </div>
+                {!isSidebarCollapsed && (
+                  <div className='sidebar-user-info'>
+                    <span className='sidebar-user-email'>{user?.email}</span>
+                    {userLicense?.expiresAt && (
+                      <span className='sidebar-user-expires'>
+                        {userLicense.status === 'expired' || userLicense.status === 'inactive'
+                          ? `Vencida em: ${new Date(userLicense.expiresAt).toLocaleDateString('pt-BR')}`
+                          : `Vence em: ${new Date(userLicense.expiresAt).toLocaleDateString('pt-BR')}`
+                        }
+                      </span>
+                    )}
+                    <div className='sidebar-user-actions'>
+                      <button className='sidebar-user-profile' onClick={() => setShowProfileModal(true)}>
+                        Senha
+                      </button>
+                      <button className='sidebar-user-logout' onClick={logout}>
+                        Sair
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
         )}
 
         {/* Sidebar Editor - Painel de Edição Visual */}
@@ -1737,14 +1737,14 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
                   color: '#9ca3af',
                   textAlign: 'center'
                 }}>
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" style={{marginBottom: '16px', opacity: 0.5}}>
-                    <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" stroke="currentColor" strokeWidth="2"/>
-                    <path d="M12 5V3M12 21V19M19 12H21M3 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" style={{ marginBottom: '16px', opacity: 0.5 }}>
+                    <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" stroke="currentColor" strokeWidth="2" />
+                    <path d="M12 5V3M12 21V19M19 12H21M3 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
-                  <p style={{fontSize: '14px', margin: '0 0 8px 0', fontWeight: '500'}}>
+                  <p style={{ fontSize: '14px', margin: '0 0 8px 0', fontWeight: '500' }}>
                     Nenhum elemento selecionado
                   </p>
-                  <p style={{fontSize: '12px', margin: 0, lineHeight: '1.5'}}>
+                  <p style={{ fontSize: '12px', margin: 0, lineHeight: '1.5' }}>
                     Clique em qualquer elemento da página para começar a editar
                   </p>
                 </div>
@@ -1807,12 +1807,12 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
                 try {
                   // Obter HTML atualizado do iframe
                   let html = savedEditedHtml || state.iframeSrc || '';
-                  
+
                   if (!html || html.trim().length === 0) {
                     showFeedback('Nenhum conteúdo disponível para exportar. Clone uma página primeiro.', 'error');
                     return;
                   }
-                  
+
                   setExportHtml(html);
                   setShowExportModal(true);
 
@@ -2105,9 +2105,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
                     disabled
                     className="input-readonly"
                   />
-                  <small style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px', display: 'block' }}>
-                    CPF vinculado à compra (anti-pirataria)
-                  </small>
                 </div>
 
                 <div className="form-group">
@@ -2118,9 +2115,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
                     disabled
                     className="input-readonly"
                   />
-                  <small style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px', display: 'block' }}>
-                    Telefone vinculado à compra
-                  </small>
                 </div>
               </div>
 
