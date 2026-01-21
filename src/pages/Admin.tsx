@@ -44,6 +44,9 @@ export const Admin: React.FC = () => {
   const [updating, setUpdating] = useState(false);
   const [newUsersDetected, setNewUsersDetected] = useState(false);
 
+  // Ref para rastrear contagem anterior de usuários (evita problemas de closure)
+  const previousUserCountRef = React.useRef(0);
+
   const loadUsers = useCallback(async (silent: boolean = false) => {
     try {
       if (!silent) {
@@ -62,20 +65,15 @@ export const Admin: React.FC = () => {
         return;
       }
 
-      // Detectar novos usuários (comparar com contagem anterior)
-      setNewUsersDetected((prevDetected) => {
-        // Manter estado se já detectou
-        if (prevDetected) return prevDetected;
-        return false;
-      });
-
-      // Verificar se há novos usuários usando closure
-      const previousCount = users.length;
-      if (previousCount > 0 && allUsers.length > previousCount) {
+      // Verificar se há novos usuários usando ref
+      if (previousUserCountRef.current > 0 && allUsers.length > previousUserCountRef.current) {
         setNewUsersDetected(true);
         // Auto-hide após 5 segundos
         setTimeout(() => setNewUsersDetected(false), 5000);
       }
+
+      // Atualizar ref com contagem atual
+      previousUserCountRef.current = allUsers.length;
 
       // Carregar informações de licença para cada usuário com tratamento individual
       const usersWithLicense = await Promise.all(
