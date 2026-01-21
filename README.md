@@ -92,6 +92,22 @@ O Dokploy detecta o `Dockerfile` e faz o build automaticamente usando Nginx para
 
 - **Frontend**: https://clonepages.fabricadelowticket.com.br
 
+### ⚠️ Importante: Rate Limiting no Deploy
+
+**Problema conhecido:** O Dokploy pode ignorar deploys quando há múltiplos pushes muito próximos (em poucos minutos).
+
+**Solução:**
+- Aguardar **2-3 minutos entre pushes** quando houver múltiplos commits
+- Agrupar mudanças relacionadas em um único commit quando possível
+- Se o deploy não for acionado, aguardar alguns minutos e fazer um novo push de teste
+
+**Sintomas:**
+- ✅ Push realizado com sucesso
+- ✅ Commit aparece no GitHub
+- ❌ Mas o deploy não é acionado no Dokploy
+
+Se isso acontecer, aguarde alguns minutos e faça um novo push.
+
 ## 📞 Backend
 
 Este frontend se conecta ao backend em: `https://bclone.fabricadelowticket.com.br`
