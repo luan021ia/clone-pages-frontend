@@ -82,6 +82,17 @@ git push origin main
 
 O Dokploy detecta o `Dockerfile` e faz o build automaticamente usando Nginx para servir os arquivos estáticos.
 
+### Configuração no Dokploy
+
+**Build Type:** Dockerfile
+
+**Campos de configuração:**
+- **Docker File:** `Dockerfile`
+- **Docker Context Path:** `.`
+- **Docker Build Stage:** (deixar vazio)
+
+**Importante:** O Build Type deve ser **"Dockerfile"** (não "Static") para garantir que os MIME types sejam servidos corretamente.
+
 ### Arquivos de Deploy
 
 - `Dockerfile` - Container Nginx Alpine
@@ -107,6 +118,21 @@ O Dokploy detecta o `Dockerfile` e faz o build automaticamente usando Nginx para
 - ❌ Mas o deploy não é acionado no Dokploy
 
 Se isso acontecer, aguarde alguns minutos e faça um novo push.
+
+### ✅ Problema de MIME Type Resolvido
+
+**Problema anterior:** Arquivos JavaScript sendo servidos com MIME type `application/octet-stream` causando erro:
+```
+Failed to load module script: Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of "application/octet-stream"
+```
+
+**Solução implementada:**
+- Build Type configurado como **"Dockerfile"** no Dokploy
+- `Dockerfile` usa Nginx Alpine com `nginx.conf` customizado
+- `nginx.conf` configura MIME types corretos: `application/javascript; charset=utf-8` para arquivos `.js` e `.mjs`
+- **Status:** ✅ Resolvido e funcionando
+
+**Nota:** Não usar Build Type "Static" pois não permite configuração de MIME types no servidor interno.
 
 ## 📞 Backend
 

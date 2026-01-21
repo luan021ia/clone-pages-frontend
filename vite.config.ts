@@ -69,8 +69,19 @@ export default defineConfig({
       },
     },
   },
-  // Environment variables
-  define: {
-    // This will be available at runtime via import.meta.env
+  build: {
+    rollupOptions: {
+      output: {
+        // Garantir que arquivos JS tenham extensão .js
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name && assetInfo.name.endsWith('.js')) {
+            return 'assets/[name]-[hash].js'
+          }
+          return 'assets/[name]-[hash].[ext]'
+        }
+      }
+    }
   }
 })

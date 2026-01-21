@@ -1,0 +1,27 @@
+# Forçar MIME types corretos
+<IfModule mod_mime.c>
+  AddType application/javascript .js .mjs
+  AddType text/css .css
+  AddType text/html .html
+  AddType application/json .json
+</IfModule>
+
+# Headers para JavaScript
+<FilesMatch "\.(js|mjs)$">
+  Header set Content-Type "application/javascript; charset=utf-8"
+</FilesMatch>
+
+# Headers para CSS
+<FilesMatch "\.css$">
+  Header set Content-Type "text/css; charset=utf-8"
+</FilesMatch>
+
+# SPA Routing
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>

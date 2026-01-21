@@ -1,21 +1,22 @@
 {
-  "build": {
-    "type": "static",
-    "spa": true
-  },
   "headers": {
-    "*.js": {
+    "/*.js": {
       "Content-Type": "application/javascript; charset=utf-8"
     },
-    "*.mjs": {
+    "/*.mjs": {
       "Content-Type": "application/javascript; charset=utf-8"
     },
-    "*.css": {
+    "/*.css": {
       "Content-Type": "text/css; charset=utf-8"
+    },
+    "/*.html": {
+      "Content-Type": "text/html; charset=utf-8"
     }
   },
-  "deploy": {
-    "port": 80,
-    "healthcheck": "/health"
-  }
+  "rewrites": [
+    {
+      "source": "**",
+      "destination": "/index.html"
+    }
+  ]
 }
