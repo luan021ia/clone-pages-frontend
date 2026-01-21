@@ -42,7 +42,6 @@ export const Admin: React.FC = () => {
   const [setDaysManual, setSetDaysManual] = useState('365');
   const [bonusDays, setBonusDays] = useState('');
   const [updating, setUpdating] = useState(false);
-  const [lastUserCount, setLastUserCount] = useState(0);
   const [newUsersDetected, setNewUsersDetected] = useState(false);
 
   const loadUsers = useCallback(async (silent: boolean = false) => {
@@ -64,15 +63,19 @@ export const Admin: React.FC = () => {
       }
 
       // Detectar novos usuários (comparar com contagem anterior)
-      setLastUserCount((prevCount) => {
-        if (prevCount > 0 && allUsers.length > prevCount) {
-          const newCount = allUsers.length - prevCount;
-          setNewUsersDetected(true);
-          // Auto-hide após 5 segundos
-          setTimeout(() => setNewUsersDetected(false), 5000);
-        }
-        return allUsers.length;
+      setNewUsersDetected((prevDetected) => {
+        // Manter estado se já detectou
+        if (prevDetected) return prevDetected;
+        return false;
       });
+
+      // Verificar se há novos usuários usando closure
+      const previousCount = users.length;
+      if (previousCount > 0 && allUsers.length > previousCount) {
+        setNewUsersDetected(true);
+        // Auto-hide após 5 segundos
+        setTimeout(() => setNewUsersDetected(false), 5000);
+      }
 
       // Carregar informações de licença para cada usuário com tratamento individual
       const usersWithLicense = await Promise.all(
@@ -103,7 +106,7 @@ export const Admin: React.FC = () => {
       return;
     }
     loadUsers();
-    
+
     // Polling automático a cada 30 segundos para detectar novos usuários da Kiwify
     const pollingInterval = setInterval(() => {
       loadUsers(true); // true = silent mode (não mostra loading)
@@ -177,9 +180,9 @@ export const Admin: React.FC = () => {
 
     try {
       // Verificar se há mudanças em name, email, role, cpf ou phone
-      const hasChanges = 
+      const hasChanges =
         editName !== editingUser.name ||
-        editEmail !== editingUser.email || 
+        editEmail !== editingUser.email ||
         editRole !== editingUser.role ||
         editCpf !== (editingUser.cpf || '') ||
         editPhone !== (editingUser.phone || '');
@@ -306,15 +309,15 @@ export const Admin: React.FC = () => {
 
   const handleBonusDays = async () => {
     if (!editingUser) return;
-    
+
     const days = parseInt(bonusDays);
     if (isNaN(days) || days < 1) {
       alert('Digite um número válido de dias (mínimo 1)');
       return;
     }
-    
+
     setUpdating(true);
-    
+
     try {
       await authService.renewUserLicense(editingUser.id, days);
       alert(`${days} dias bonificados com sucesso!`);
@@ -770,113 +773,113 @@ export const Admin: React.FC = () => {
 
                 {/* Ações de Licença em Grid */}
                 <div className="license-actions-grid">
-                {/* Definir Dias Manualmente */}
-                <div className="license-action-card">
-                  <label htmlFor="set-days">Definir dias exatos</label>
-                  <div className="input-button-group">
-                    <input
-                      type="number"
-                      id="set-days"
-                      value={setDaysManual}
-                      onChange={(e) => setSetDaysManual(e.target.value)}
-                      disabled={updating}
-                      className="form-input"
-                      min="0"
-                      placeholder="Ex: 365"
-                    />
-                    <button
-                      type="button"
-                      className="btn-set-days"
-                      onClick={handleSetLicenseDays}
-                      disabled={updating}
-                    >
-                      Definir
-                    </button>
-                  </div>
-                  <small>Define dias exatos a partir de hoje (substitui licença atual)</small>
-                </div>
-
-                {/* Renovar/Adicionar/Bonificar Dias */}
-                <div className="license-action-card">
-                  <label htmlFor="renew-days">Adicionar/Bonificar dias</label>
-                  
-                  {/* Opção 1: Select rápido com valores pré-definidos */}
-                  <div style={{ marginBottom: '12px' }}>
+                  {/* Definir Dias Manualmente */}
+                  <div className="license-action-card">
+                    <label htmlFor="set-days">Definir dias exatos</label>
                     <div className="input-button-group">
-                      <select
-                        id="renew-days"
-                        value={renewDays}
-                        onChange={(e) => setRenewDays(e.target.value)}
+                      <input
+                        type="number"
+                        id="set-days"
+                        value={setDaysManual}
+                        onChange={(e) => setSetDaysManual(e.target.value)}
                         disabled={updating}
-                        className="form-select"
-                      >
-                        <option value="7">7 dias</option>
-                        <option value="30">30 dias</option>
-                        <option value="90">90 dias</option>
-                        <option value="180">180 dias</option>
-                        <option value="365">365 dias</option>
-                        <option value="730">730 dias</option>
-                      </select>
+                        className="form-input"
+                        min="0"
+                        placeholder="Ex: 365"
+                      />
                       <button
                         type="button"
-                        className="btn-renew"
-                        onClick={handleRenewLicense}
+                        className="btn-set-days"
+                        onClick={handleSetLicenseDays}
                         disabled={updating}
                       >
-                        🔄 Adicionar
+                        Definir
                       </button>
                     </div>
+                    <small>Define dias exatos a partir de hoje (substitui licença atual)</small>
                   </div>
 
-                  {/* Opção 2: Input manual para bonificação personalizada */}
-                  <div className="input-button-group">
-                    <input
-                      type="number"
-                      id="bonus-days"
-                      value={bonusDays}
-                      onChange={(e) => setBonusDays(e.target.value)}
-                      placeholder="Quantidade personalizada"
-                      disabled={updating}
-                      className="form-input"
-                      min="1"
-                    />
-                    <button
-                      type="button"
-                      className="btn-set-days"
-                      onClick={handleBonusDays}
-                      disabled={updating}
-                    >
-                      Bonificar
-                    </button>
-                  </div>
-                  <small>Adiciona à licença atual ou bonificação personalizada</small>
-                </div>
-              </div>
+                  {/* Renovar/Adicionar/Bonificar Dias */}
+                  <div className="license-action-card">
+                    <label htmlFor="renew-days">Adicionar/Bonificar dias</label>
 
-              {/* Botões de Ação (Desativar/Reativar) */}
-              {editingUser.license && editingUser.license.status !== 'admin' && (
-                <div className="license-toggle-actions">
-                  {editingUser.license.isActive ? (
-                    <button
-                      type="button"
-                      className="btn-deactivate"
-                      onClick={handleDeactivateLicense}
-                      disabled={updating}
-                    >
-                      🚫 Desativar Licença
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="btn-reactivate"
-                      onClick={handleReactivateLicense}
-                      disabled={updating}
-                    >
-                      ✅ Reativar Licença ({renewDays} dias)
-                    </button>
-                  )}
+                    {/* Opção 1: Select rápido com valores pré-definidos */}
+                    <div style={{ marginBottom: '12px' }}>
+                      <div className="input-button-group">
+                        <select
+                          id="renew-days"
+                          value={renewDays}
+                          onChange={(e) => setRenewDays(e.target.value)}
+                          disabled={updating}
+                          className="form-select"
+                        >
+                          <option value="7">7 dias</option>
+                          <option value="30">30 dias</option>
+                          <option value="90">90 dias</option>
+                          <option value="180">180 dias</option>
+                          <option value="365">365 dias</option>
+                          <option value="730">730 dias</option>
+                        </select>
+                        <button
+                          type="button"
+                          className="btn-renew"
+                          onClick={handleRenewLicense}
+                          disabled={updating}
+                        >
+                          🔄 Adicionar
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Opção 2: Input manual para bonificação personalizada */}
+                    <div className="input-button-group">
+                      <input
+                        type="number"
+                        id="bonus-days"
+                        value={bonusDays}
+                        onChange={(e) => setBonusDays(e.target.value)}
+                        placeholder="Quantidade personalizada"
+                        disabled={updating}
+                        className="form-input"
+                        min="1"
+                      />
+                      <button
+                        type="button"
+                        className="btn-set-days"
+                        onClick={handleBonusDays}
+                        disabled={updating}
+                      >
+                        Bonificar
+                      </button>
+                    </div>
+                    <small>Adiciona à licença atual ou bonificação personalizada</small>
+                  </div>
                 </div>
-              )}
+
+                {/* Botões de Ação (Desativar/Reativar) */}
+                {editingUser.license && editingUser.license.status !== 'admin' && (
+                  <div className="license-toggle-actions">
+                    {editingUser.license.isActive ? (
+                      <button
+                        type="button"
+                        className="btn-deactivate"
+                        onClick={handleDeactivateLicense}
+                        disabled={updating}
+                      >
+                        🚫 Desativar Licença
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-reactivate"
+                        onClick={handleReactivateLicense}
+                        disabled={updating}
+                      >
+                        ✅ Reativar Licença ({renewDays} dias)
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="modal-actions" style={{ marginTop: '12px', marginBottom: '0' }}>

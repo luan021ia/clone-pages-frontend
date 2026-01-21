@@ -3,28 +3,19 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
-    react(),
-    // Remover console.logs em produção
-    {
-      name: 'remove-console',
-      enforce: 'post',
-      transform(code, id) {
-        if (process.env.NODE_ENV === 'production' && !id.includes('node_modules')) {
-          return {
-            code: code.replace(/console\.(log|warn|error|debug|info|trace)\([^)]*\);?/g, ''),
-            map: null
-          }
-        }
-      }
-    }
+    react()
   ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // Remover console.logs em produção usando esbuild (mais eficiente que terser)
+  esbuild: mode === 'production' ? {
+    drop: ['console', 'debugger'],
+  } : undefined,
   server: {
     port: 5173,
     strictPort: true,
@@ -85,17 +76,8 @@ export default defineConfig({
     },
   },
   build: {
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace', 'console.warn']
-      },
-      format: {
-        comments: false
-      }
-    },
+    // Usar esbuild para minificação (padrão do Vite, mais rápido e já remove console.logs via drop acima)
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         // Garantir que arquivos JS tenham extensão .js
@@ -110,4 +92,5 @@ export default defineConfig({
       }
     }
   }
-})
+}))
+

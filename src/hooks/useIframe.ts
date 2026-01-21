@@ -26,18 +26,18 @@ export const useIframe = () => {
     }
 
     if (!iframeRef.current?.contentDocument) {
-      return () => {};
+      return () => { };
     }
 
     try {
       const iframeDoc = iframeRef.current.contentDocument;
 
       if (!iframeDoc.body) {
-        return () => {};
+        return () => { };
       }
 
       // Create new observer
-      observerRef.current = new MutationObserver((mutations) => {
+      observerRef.current = new MutationObserver((_mutations) => {
         // Log mutations for debugging (can be removed in production)
       });
 
@@ -61,7 +61,7 @@ export const useIframe = () => {
       };
     } catch (error) {
       console.error('❌ useIframe: failed to setup DOM observer:', error);
-      return () => {};
+      return () => { };
     }
   }, []);
 
