@@ -1,6 +1,6 @@
 {
   "build": {
-    "type": "dockerfile",
+    "type": "static",
     "spa": true
   },
   "headers": {
