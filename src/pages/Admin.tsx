@@ -42,7 +42,7 @@ export const Admin: React.FC = () => {
   const [setDaysManual, setSetDaysManual] = useState('365');
   const [bonusDays, setBonusDays] = useState('');
   const [updating, setUpdating] = useState(false);
-  const [, setLastUserCount] = useState(0);
+  const [lastUserCount, setLastUserCount] = useState(0);
   const [newUsersDetected, setNewUsersDetected] = useState(false);
 
   const loadUsers = useCallback(async (silent: boolean = false) => {
@@ -66,6 +66,7 @@ export const Admin: React.FC = () => {
       // Detectar novos usuários (comparar com contagem anterior)
       setLastUserCount((prevCount) => {
         if (prevCount > 0 && allUsers.length > prevCount) {
+          const newCount = allUsers.length - prevCount;
           setNewUsersDetected(true);
           // Auto-hide após 5 segundos
           setTimeout(() => setNewUsersDetected(false), 5000);

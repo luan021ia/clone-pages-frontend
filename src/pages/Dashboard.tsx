@@ -84,6 +84,7 @@ export const Dashboard: React.FC = () => {
 
   // Estado para licença do usuário
   const [userLicense, setUserLicense] = useState<LicenseInfo | null>(null);
+  const [loadingLicense, setLoadingLicense] = useState(false);
 
   // 📦 Estado para Export Modal
   const [showExportModal, setShowExportModal] = useState(false);
@@ -232,12 +233,14 @@ export const Dashboard: React.FC = () => {
     
     const loadLicense = async () => {
       try {
+        setLoadingLicense(true);
         const license = await authService.getUserLicense(user.id);
         setUserLicense(license || null);
       } catch (error) {
         // Silencioso - admin ou usuário sem licença não precisa mostrar erro
         setUserLicense(null);
       } finally {
+        setLoadingLicense(false);
       }
     };
     
@@ -920,6 +923,12 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       if (html) {
         // ✅ SOLUÇÃO 3: Proteção para cópia também
         // Verificar se códigos estão presentes antes de copiar
+        const hasPixel = state.pixelId && html.includes(state.pixelId);
+        const hasGtag = state.gtagId && html.includes(state.gtagId);
+        const hasClarity = state.clarityId && html.includes(state.clarityId);
+        const hasUtmfy = state.utmfyCode && html.includes(state.utmfyCode);
+        const hasWhatsApp = state.whatsappNumber && html.includes(state.whatsappNumber);
+
         const success = await copyToClipboard(html);
         if (success) {
           let message = 'HTML copiado com códigos de rastreamento';
@@ -1973,6 +1982,21 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
                     updateState({ status: SUCCESS_STATUS });
 
                     const usingSrcDoc = !!savedEditedHtml;
+                    const withEditor = savedEditedHtml && state.editMode;
+                    const iframeContent = usingSrcDoc
+                      ? state.editMode
+                        ? (htmlWithEditorInjected || injectEditorScriptInHtml(savedEditedHtml))
+                        : savedEditedHtml
+                      : state.iframeSrc;
+
+
+
+                    if (usingSrcDoc && state.editMode) {
+
+                    } else if (usingSrcDoc) {
+
+                    } else {
+                    }
 
                     // Aguardar um momento para o script executar, depois verificar
                     setTimeout(() => {
@@ -1980,7 +2004,7 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
                       checkEditorScript();
                     }, 1000);
                   }}
-                  onError={() => {
+                  onError={(e) => {
 
                     setCloneError('Não foi possível clonar esta página. O site pode estar bloqueando o acesso ou estar indisponível.');
                     if (cloneTimeoutRef.current) {
