@@ -37,7 +37,7 @@ export const useIframe = () => {
       }
 
       // Create new observer
-      observerRef.current = new MutationObserver((mutations) => {
+      observerRef.current = new MutationObserver(() => {
         // Log mutations for debugging (can be removed in production)
       });
 
