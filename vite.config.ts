@@ -4,7 +4,22 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Remover console.logs em produção
+    {
+      name: 'remove-console',
+      enforce: 'post',
+      transform(code, id) {
+        if (process.env.NODE_ENV === 'production' && !id.includes('node_modules')) {
+          return {
+            code: code.replace(/console\.(log|warn|error|debug|info|trace)\([^)]*\);?/g, ''),
+            map: null
+          }
+        }
+      }
+    }
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -70,6 +85,14 @@ export default defineConfig({
     },
   },
   build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace']
+      }
+    },
     rollupOptions: {
       output: {
         // Garantir que arquivos JS tenham extensão .js
