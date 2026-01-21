@@ -1972,8 +1972,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
                     // ✅ Atualizar status para SUCCESS quando iframe carregar
                     updateState({ status: SUCCESS_STATUS });
 
-                    const usingSrcDoc = !!savedEditedHtml;
-
                     // Aguardar um momento para o script executar, depois verificar
                     setTimeout(() => {
 
