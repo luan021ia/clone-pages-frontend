@@ -85,16 +85,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAuth = async () => {
     try {
-      console.log('🔐 [AuthContext] Verificando autenticação...');
       const token = secureTokenStorage.getToken();
       
       if (!token) {
-        console.log('🔐 [AuthContext] Nenhum token encontrado');
         setLoading(false);
         return;
       }
-      
-      console.log('🔐 [AuthContext] Token encontrado, validando com servidor...');
       
       // 🎯 PRIMEIRO: Tentar extrair dados do token para fallback
       let fallbackUser: User | null = null;
@@ -110,19 +106,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               role: payload.role || 'user',
               createdAt: new Date().toISOString(),
             };
-            console.log('🔐 [AuthContext] Fallback preparado do token:', fallbackUser.email);
           }
         }
       } catch (decodeError) {
-        console.warn('⚠️ [AuthContext] Não foi possível decodificar token para fallback');
+        // Silent fail
       }
       
       try {
         const currentUser = await authService.getCurrentUser();
-        console.log('✅ [AuthContext] Usuário autenticado via API:', currentUser.email);
         setUser(currentUser);
       } catch (apiError: any) {
-        console.error('❌ [AuthContext] Erro ao buscar usuário:', apiError.message);
         
         // Verificar tipo de erro
         const errorMessage = apiError.message?.toLowerCase() || '';
@@ -145,14 +138,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Se for erro de rede e temos fallback, usa os dados do token
         if (isNetworkError && fallbackUser) {
-          console.warn('⚠️ [AuthContext] Erro de rede, usando fallback do token');
           setUser(fallbackUser);
           return;
         }
         
         // Se for erro de servidor (5xx) e temos fallback, também usa
         if ((errorMessage.includes('500') || errorMessage.includes('502') || errorMessage.includes('503')) && fallbackUser) {
-          console.warn('⚠️ [AuthContext] Erro de servidor, usando fallback do token');
           setUser(fallbackUser);
           return;
         }
@@ -160,22 +151,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Se NÃO for erro de autenticação explícito e temos fallback, usa o fallback
         // Isso cobre casos onde não sabemos o tipo exato de erro
         if (!isUnauthorizedError && fallbackUser) {
-          console.warn('⚠️ [AuthContext] Erro desconhecido, tentando fallback do token');
           setUser(fallbackUser);
           return;
         }
         
         // Se for erro de autenticação explícito (401/unauthorized), remove token
-        console.log('🔐 [AuthContext] Removendo token inválido (erro de autenticação)');
         secureTokenStorage.removeToken();
         setUser(null);
       }
     } catch (error) {
-      console.error('❌ [AuthContext] Erro crítico na verificação:', error);
       // Não remove token em erro crítico, pode ser problema temporário
       setUser(null);
     } finally {
-      console.log('🔐 [AuthContext] Verificação de autenticação concluída');
       setLoading(false);
     }
   };
