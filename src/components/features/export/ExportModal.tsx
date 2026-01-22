@@ -221,9 +221,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   <div className="file-item nested">📁 fonts/</div>
                 </div>
               )}
-              <div className="file-item">📄 README.md</div>
-              <div className="file-item">📄 .gitignore</div>
             </div>
+            <p className="help-text" style={{ marginTop: '10px', fontSize: '0.9em', color: '#666' }}>
+              Todos os arquivos necessários para hospedar o site estão incluídos
+            </p>
           </div>
         </div>
 

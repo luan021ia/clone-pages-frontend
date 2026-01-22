@@ -7,13 +7,13 @@ import { useIframe } from '../hooks/useIframe';
 import { useEditor } from '../hooks/useEditor';
 import { validateUrl } from '../utils/validation';
 import { buildApiUrl, API_BASE_URL } from '../config/api';
+import { api } from '../services/api';
 import { DownloadService } from '../services/downloadService';
 import { CloneService } from '../services/cloneService';
 import ToggleSwitch from '../components/ToggleSwitch/ToggleSwitch';
 import { EditorPanel } from '../components/features/EditorPanel';
 import { ExpandButton } from '../components/ExpandButton';
 import { useExpandButton } from '../hooks/useExpandButton';
-import { ExportModal } from '../components/features/export/ExportModal';
 import { CLONING_STATUS, SUCCESS_STATUS } from '../constants/app.constants';
 import { Copy, Download, Package } from 'lucide-react';
 import { authService } from '../services/authService';
@@ -87,8 +87,7 @@ export const Dashboard: React.FC = () => {
   const [loadingLicense, setLoadingLicense] = useState(false);
 
   // 📦 Estado para Export Modal
-  const [showExportModal, setShowExportModal] = useState(false);
-  const [exportHtml, setExportHtml] = useState<string>('');
+  const [isExportingZip, setIsExportingZip] = useState(false);
 
   // Estado para histórico dos códigos de rastreamento
   const [pixelHistory, setPixelHistory] = useState<string[]>([]);
@@ -870,22 +869,32 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       // 🔒 SEGURANÇA: Bloquear cópia se Modo Edição está ativo
       if (state.editMode) {
         showFeedback('⚠️ Desative o Modo Edição para copiar o código', 'warning');
-
         return;
       }
 
-      let html: string | null = null;
-
-      // 🎯 Se tem HTML salvo de edições anteriores, usar ele (sem Modo Edição)
-      if (savedEditedHtml && hasSavedEdits) {
-
-        html = savedEditedHtml;
+      // Validação inicial: verificar se há conteúdo para copiar
+      if (!state.iframeSrc || state.iframeSrc.trim().length === 0) {
+        showFeedback('Nenhum conteúdo disponível para copiar. Clone uma página primeiro.', 'error');
+        return;
       }
 
-      // Se não, buscar do servidor COM OS CÓDIGOS INJETADOS
-      if (!html) {
+      console.log('📋 [Copy] Iniciando cópia do HTML...');
 
-        // 🎯 CONSTRUIR URL COM OS MESMOS PARAMETROS DO IFRAME ATUAL
+      let html: string | null = null;
+      let source: string = '';
+
+      // 🎯 PRIORIDADE 1: Se tem HTML salvo de edições anteriores, usar ele
+      if (savedEditedHtml && hasSavedEdits) {
+        console.log('📋 [Copy] Usando HTML editado salvo');
+        html = savedEditedHtml;
+        source = 'edições salvas';
+      }
+
+      // 🎯 PRIORIDADE 2: Buscar do servidor COM OS CÓDIGOS INJETADOS
+      if (!html) {
+        console.log('📋 [Copy] Buscando HTML do servidor...');
+
+        // Verificar se há códigos de rastreamento habilitados
         const hasCustomCodes = Boolean(
           (state.pixelId && state.pixelEnabled) ||
           (state.gtagId && state.gtagEnabled) ||
@@ -897,59 +906,76 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         const copyUrl = buildRenderPageUrl(state.url, {
           editMode: false,
           injectCustom: hasCustomCodes,
-          pixelId:
-            state.pixelId && state.pixelEnabled ? state.pixelId : undefined,
+          pixelId: state.pixelId && state.pixelEnabled ? state.pixelId : undefined,
           gtagId: state.gtagId && state.gtagEnabled ? state.gtagId : undefined,
-          whatsappNumber:
-            state.whatsappNumber && state.whatsappEnabled
-              ? state.whatsappNumber
-              : undefined,
-          clarityId:
-            state.clarityId && state.clarityEnabled
-              ? state.clarityId
-              : undefined,
-          utmfyCode:
-            state.utmfyCode && state.utmfyEnabled ? state.utmfyCode : undefined,
+          whatsappNumber: state.whatsappNumber && state.whatsappEnabled ? state.whatsappNumber : undefined,
+          clarityId: state.clarityId && state.clarityEnabled ? state.clarityId : undefined,
+          utmfyCode: state.utmfyCode && state.utmfyEnabled ? state.utmfyCode : undefined,
         });
 
-        // Fazer requisição direta ao endpoint
         const response = await fetch(copyUrl);
         if (!response.ok) {
-          throw new Error(`Falha ao buscar HTML: ${response.status}`);
+          throw new Error(`Falha ao buscar HTML: ${response.status} ${response.statusText}`);
         }
         html = await response.text();
+        source = 'servidor';
       }
 
-      if (html) {
-        // ✅ SOLUÇÃO 3: Proteção para cópia também
-        // Verificar se códigos estão presentes antes de copiar
-        const hasPixel = state.pixelId && html.includes(state.pixelId);
-        const hasGtag = state.gtagId && html.includes(state.gtagId);
-        const hasClarity = state.clarityId && html.includes(state.clarityId);
-        const hasUtmfy = state.utmfyCode && html.includes(state.utmfyCode);
-        const hasWhatsApp = state.whatsappNumber && html.includes(state.whatsappNumber);
+      // Validação final
+      if (!html || html.trim().length === 0) {
+        showFeedback('❌ Erro: HTML vazio. Tente clonar a página novamente.', 'error');
+        return;
+      }
 
-        const success = await copyToClipboard(html);
-        if (success) {
-          let message = 'HTML copiado com códigos de rastreamento';
-          if (savedEditedHtml && hasSavedEdits) {
-            message = 'HTML copiado com edições e códigos de rastreamento';
-          }
-          showFeedback(message);
-        } else {
-          showFeedback('Erro ao copiar HTML');
+      console.log(`📋 [Copy] HTML obtido de ${source}:`, html.length, 'caracteres');
+
+      // Copiar para clipboard
+      const success = await copyToClipboard(html);
+      
+      if (success) {
+        // Verificar se há códigos de rastreamento incluídos
+        const trackingCodesIncluded = [];
+        if (state.pixelId && html.includes(state.pixelId)) trackingCodesIncluded.push('Meta Pixel');
+        if (state.gtagId && html.includes(state.gtagId)) trackingCodesIncluded.push('Google Analytics');
+        if (state.clarityId && html.includes(state.clarityId)) trackingCodesIncluded.push('Clarity');
+        if (state.utmfyCode && html.includes(state.utmfyCode)) trackingCodesIncluded.push('UTMFY');
+        if (state.whatsappNumber && html.includes(state.whatsappNumber)) trackingCodesIncluded.push('WhatsApp');
+
+        // Feedback detalhado
+        let message = '✅ HTML copiado com sucesso';
+        if (savedEditedHtml && hasSavedEdits) {
+          message += ' (com suas edições)';
         }
+        if (trackingCodesIncluded.length > 0) {
+          message += ` + ${trackingCodesIncluded.join(', ')}`;
+        }
+        
+        showFeedback(message);
+        console.log('✅ [Copy] HTML copiado com sucesso');
+      } else {
+        showFeedback('❌ Erro ao copiar. Verifique as permissões do navegador.', 'error');
+        console.error('❌ [Copy] Falha ao copiar para clipboard');
       }
     } catch (error) {
-
-      showFeedback('Erro ao copiar HTML');
+      console.error('❌ [Copy] Erro ao copiar HTML:', error);
+      showFeedback('❌ Erro ao copiar: ' + (error instanceof Error ? error.message : 'Erro desconhecido'), 'error');
     }
   }, [
-    state,
+    state.editMode,
+    state.iframeSrc,
+    state.url,
+    state.pixelId,
+    state.pixelEnabled,
+    state.gtagId,
+    state.gtagEnabled,
+    state.whatsappNumber,
+    state.whatsappEnabled,
+    state.clarityId,
+    state.clarityEnabled,
+    state.utmfyCode,
+    state.utmfyEnabled,
     copyToClipboard,
     showFeedback,
-    hasEdits,
-    getEditedHtml,
     savedEditedHtml,
     hasSavedEdits,
   ]);
@@ -959,154 +985,148 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
       // 🔒 SEGURANÇA: Bloquear download se Modo Edição está ativo
       if (state.editMode) {
         showFeedback('⚠️ Desative o Modo Edição para baixar a página', 'warning');
+        return;
+      }
 
+      // Validação inicial
+      if (!state.iframeSrc || state.iframeSrc.trim().length === 0) {
+        showFeedback('Nenhum conteúdo disponível para baixar. Clone uma página primeiro.', 'error');
         return;
       }
 
       // 🔄 Ativar loading
       setIsDownloading(true);
-
-      // ✅ SOLUÇÃO 1: Logging detalhado do estado dos códigos ANTES do download
+      console.log('💾 [Download] Iniciando download do HTML...');
 
       let html: string | null = null;
+      let source: string = '';
 
       // 🎯 PRIORIDADE 1: Se tem HTML salvo das edições, usar ele
       if (savedEditedHtml && hasSavedEdits) {
-
+        console.log('💾 [Download] Usando HTML editado salvo');
         html = savedEditedHtml;
+        source = 'edições salvas';
       }
 
-      // 🎯 IMPORTANTE: NÃO usar HTML do iframe para download!
-      // O iframe é apenas para PREVIEW em tempo real. Para download FINAL,
-      // SEMPRE buscamos do servidor com os códigos injetados corretamente.
-      // Se o usuário quer manter edições, deve ter salvo antes.
-
+      // 🎯 PRIORIDADE 2: Buscar do servidor com códigos de rastreamento
       if (!html) {
+        console.log('💾 [Download] Buscando HTML do servidor...');
 
-        // ✅ SOLUÇÃO 2: Lógica melhorada - injetar se houver QUALQUER código preenchido
+        // Verificar se há QUALQUER código habilitado
         const hasAnyCode = Boolean(
-          state.pixelId ||
-          state.gtagId ||
-          state.whatsappNumber ||
-          state.clarityId ||
-          state.utmfyCode
+          (state.pixelId && state.pixelEnabled) ||
+          (state.gtagId && state.gtagEnabled) ||
+          (state.whatsappNumber && state.whatsappEnabled) ||
+          (state.clarityId && state.clarityEnabled) ||
+          (state.utmfyCode && state.utmfyEnabled)
         );
 
 
         const downloadUrl = buildRenderPageUrl(state.url, {
-          editMode: false, // Sempre false para download - queremos HTML fresco com códigos
+          editMode: false,
           injectCustom: hasAnyCode,
-          pixelId:
-            state.pixelId && state.pixelEnabled ? state.pixelId : undefined,
+          pixelId: state.pixelId && state.pixelEnabled ? state.pixelId : undefined,
           gtagId: state.gtagId && state.gtagEnabled ? state.gtagId : undefined,
-          whatsappNumber:
-            state.whatsappNumber && state.whatsappEnabled
-              ? state.whatsappNumber
-              : undefined,
-          clarityId:
-            state.clarityId && state.clarityEnabled
-              ? state.clarityId
-              : undefined,
-          utmfyCode:
-            state.utmfyCode && state.utmfyEnabled ? state.utmfyCode : undefined,
+          whatsappNumber: state.whatsappNumber && state.whatsappEnabled ? state.whatsappNumber : undefined,
+          clarityId: state.clarityId && state.clarityEnabled ? state.clarityId : undefined,
+          utmfyCode: state.utmfyCode && state.utmfyEnabled ? state.utmfyCode : undefined,
         });
 
-        // Fazer requisição direta ao endpoint
         const response = await fetch(downloadUrl);
         if (!response.ok) {
-          throw new Error(`Falha ao buscar HTML: ${response.status}`);
+          throw new Error(`Falha ao buscar HTML: ${response.status} ${response.statusText}`);
         }
         html = await response.text();
-
+        source = 'servidor';
       }
 
-      if (html) {
-        let suffix = 'clone';
-        if (savedEditedHtml && hasSavedEdits) {
-          suffix = 'edited';
-        }
-
-        // ✅ SOLUÇÃO 4: Validação PRÉ-LIMPEZA
-        // Verificar se os códigos estão presentes ANTES de limpar
-        const hadPixelBefore = state.pixelId && html.includes(state.pixelId);
-        const hadGtagBefore = state.gtagId && html.includes(state.gtagId);
-        const hadClarityBefore = state.clarityId && html.includes(state.clarityId);
-        const hadUtmfyBefore = state.utmfyCode && html.includes(state.utmfyCode);
-        const hadWhatsAppBefore = state.whatsappNumber && html.includes(state.whatsappNumber);
-
-        // Limpar artefatos do editor e códigos de rastreamento antes de baixar
-        let finalHtml = CloneService.cleanEditorArtifacts(html);
-
-        // ✅ SOLUÇÃO 3: Proteger contra remoção incorreta
-        // Passar informação de quais códigos estão presentes no HTML original
-        // para que a função cleanTrackingCodes não remova os que foram injetados
-        finalHtml = CloneService.cleanTrackingCodes(finalHtml, {
-          preservePixel: Boolean((state.pixelEnabled && !!state.pixelId) || hadPixelBefore),
-          preserveGtag: Boolean((state.gtagEnabled && !!state.gtagId) || hadGtagBefore),
-          preserveClarity: Boolean((state.clarityEnabled && !!state.clarityId) || hadClarityBefore),
-          preserveUtmfy: Boolean((state.utmfyEnabled && !!state.utmfyCode) || hadUtmfyBefore),
-          preserveWhatsApp: Boolean((state.whatsappEnabled && !!state.whatsappNumber) || hadWhatsAppBefore),
-          pixelId: state.pixelId,
-          gtagId: state.gtagId,
-          clarityId: state.clarityId,
-        });
-
-        // ✅ SOLUÇÃO 4: Validação PÓS-LIMPEZA
-        // Verificar se códigos foram removidos incorretamente
-        const hasPixelAfter = state.pixelId && finalHtml.includes(state.pixelId);
-        const hasGtagAfter = state.gtagId && finalHtml.includes(state.gtagId);
-        const hasClarityAfter = state.clarityId && finalHtml.includes(state.clarityId);
-        const hasUtmfyAfter = state.utmfyCode && finalHtml.includes(state.utmfyCode);
-        const hasWhatsAppAfter = state.whatsappNumber && finalHtml.includes(state.whatsappNumber);
-
-        // Se algum código foi removido incorretamente, avisar o usuário
-        if ((hadPixelBefore && !hasPixelAfter) ||
-          (hadGtagBefore && !hasGtagAfter) ||
-          (hadClarityBefore && !hasClarityAfter) ||
-          (hadUtmfyBefore && !hasUtmfyAfter) ||
-          (hadWhatsAppBefore && !hasWhatsAppAfter)) {
-
-          showFeedback('⚠️ Aviso: Alguns códigos foram removidos durante o processamento. Verifique o arquivo!', 'warning');
-        }
-
-        const filename = DownloadService.generateFilename(state.url, suffix);
-        DownloadService.downloadHtml(finalHtml, filename);
-
-        // 📝 Adicionar códigos ao histórico após download confirmado
-        if (state.pixelId && state.pixelEnabled) {
-          addToHistory(state.pixelId, pixelHistory, setPixelHistory);
-        }
-        if (state.gtagId && state.gtagEnabled) {
-          addToHistory(state.gtagId, gtagHistory, setGtagHistory);
-        }
-        if (state.utmfyCode && state.utmfyEnabled) {
-          addToHistory(state.utmfyCode, utmfyHistory, setUtmfyHistory);
-        }
-        if (state.clarityId && state.clarityEnabled) {
-          addToHistory(state.clarityId, clarityHistory, setClarityHistory);
-        }
-        if (state.whatsappNumber && state.whatsappEnabled) {
-          addToHistory(state.whatsappNumber, whatsappHistory, setWhatsappHistory);
-        }
-
-        let message = 'Download iniciado com códigos de rastreamento';
-        if (savedEditedHtml && hasSavedEdits) {
-          message = 'Download com edições e códigos de rastreamento iniciado';
-        }
-        showFeedback(message);
+      // Validação final
+      if (!html || html.trim().length === 0) {
+        showFeedback('❌ Erro: HTML vazio. Tente clonar a página novamente.', 'error');
+        setIsDownloading(false);
+        return;
       }
+
+      console.log(`💾 [Download] HTML obtido de ${source}:`, html.length, 'caracteres');
+
+      // Limpar artefatos do editor
+      let finalHtml = CloneService.cleanEditorArtifacts(html);
+
+      // Limpar códigos de rastreamento da página original (preservando os injetados)
+      finalHtml = CloneService.cleanTrackingCodes(finalHtml, {
+        preservePixel: Boolean(state.pixelEnabled && state.pixelId),
+        preserveGtag: Boolean(state.gtagEnabled && state.gtagId),
+        preserveClarity: Boolean(state.clarityEnabled && state.clarityId),
+        preserveUtmfy: Boolean(state.utmfyEnabled && state.utmfyCode),
+        preserveWhatsApp: Boolean(state.whatsappEnabled && state.whatsappNumber),
+        pixelId: state.pixelId,
+        gtagId: state.gtagId,
+        clarityId: state.clarityId,
+      });
+
+      // Verificar códigos de rastreamento presentes e atualizar histórico
+      const trackingCodesIncluded = [];
+      if (state.pixelId && state.pixelEnabled && finalHtml.includes(state.pixelId)) {
+        trackingCodesIncluded.push('Meta Pixel');
+        addToHistory(state.pixelId, pixelHistory, setPixelHistory);
+      }
+      if (state.gtagId && state.gtagEnabled && finalHtml.includes(state.gtagId)) {
+        trackingCodesIncluded.push('Google Analytics');
+        addToHistory(state.gtagId, gtagHistory, setGtagHistory);
+      }
+      if (state.clarityId && state.clarityEnabled && finalHtml.includes(state.clarityId)) {
+        trackingCodesIncluded.push('Clarity');
+        addToHistory(state.clarityId, clarityHistory, setClarityHistory);
+      }
+      if (state.utmfyCode && state.utmfyEnabled && finalHtml.includes(state.utmfyCode)) {
+        trackingCodesIncluded.push('UTMFY');
+        addToHistory(state.utmfyCode, utmfyHistory, setUtmfyHistory);
+      }
+      if (state.whatsappNumber && state.whatsappEnabled && finalHtml.includes(state.whatsappNumber)) {
+        trackingCodesIncluded.push('WhatsApp');
+        addToHistory(state.whatsappNumber, whatsappHistory, setWhatsappHistory);
+      }
+
+      // Gerar nome do arquivo
+      const suffix = savedEditedHtml && hasSavedEdits ? 'edited' : 'clone';
+      const filename = DownloadService.generateFilename(state.url, suffix);
+      
+      // Fazer download
+      DownloadService.downloadHtml(finalHtml, filename);
+
+      // Feedback detalhado
+      let message = '✅ Download iniciado com sucesso';
+      if (savedEditedHtml && hasSavedEdits) {
+        message += ' (com suas edições)';
+      }
+      if (trackingCodesIncluded.length > 0) {
+        message += ` + ${trackingCodesIncluded.join(', ')}`;
+      }
+      
+      showFeedback(message);
+      console.log('✅ [Download] Arquivo baixado:', filename);
+
     } catch (error) {
-
-      showFeedback('Erro ao fazer download');
+      console.error('❌ [Download] Erro ao fazer download:', error);
+      showFeedback('❌ Erro ao fazer download: ' + (error instanceof Error ? error.message : 'Erro desconhecido'), 'error');
     } finally {
-      // 🔄 Desativar loading
       setIsDownloading(false);
     }
   }, [
-    state,
+    state.editMode,
+    state.iframeSrc,
+    state.url,
+    state.pixelId,
+    state.pixelEnabled,
+    state.gtagId,
+    state.gtagEnabled,
+    state.whatsappNumber,
+    state.whatsappEnabled,
+    state.clarityId,
+    state.clarityEnabled,
+    state.utmfyCode,
+    state.utmfyEnabled,
     showFeedback,
-    hasEdits,
-    getEditedHtml,
     savedEditedHtml,
     hasSavedEdits,
     pixelHistory,
@@ -1119,6 +1139,109 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
     setClarityHistory,
     whatsappHistory,
     setWhatsappHistory,
+  ]);
+
+  const exportAsZip = useCallback(async () => {
+    try {
+      // Validação inicial
+      if (state.editMode) {
+        showFeedback('⚠️ Desative o Modo Edição para exportar', 'warning');
+        return;
+      }
+
+      if (!state.iframeSrc || state.iframeSrc.trim().length === 0) {
+        showFeedback('Nenhum conteúdo disponível para exportar. Clone uma página primeiro.', 'error');
+        return;
+      }
+
+      setIsExportingZip(true);
+      console.log('📦 [Export ZIP] Iniciando exportação...');
+
+      // 🎯 BUSCAR HTML COMPLETO DO SERVIDOR
+      let html: string;
+
+      // Se tem HTML editado salvo, usar ele
+      if (savedEditedHtml && hasSavedEdits) {
+        console.log('📦 [Export ZIP] Usando HTML editado salvo');
+        html = savedEditedHtml;
+      } else {
+        // Buscar HTML completo do servidor (não usar state.iframeSrc pois é URL!)
+        console.log('📦 [Export ZIP] Buscando HTML do servidor...');
+        
+        const fetchUrl = buildRenderPageUrl(state.url, {
+          editMode: false,
+          injectCustom: false, // Sem códigos de rastreamento no export
+        });
+
+        const response = await fetch(fetchUrl);
+        if (!response.ok) {
+          throw new Error(`Falha ao buscar HTML: ${response.status} ${response.statusText}`);
+        }
+        html = await response.text();
+      }
+
+      // Validação: verificar se é HTML válido (não URL)
+      if (html.startsWith('http://') || html.startsWith('https://')) {
+        throw new Error('Erro: recebeu URL ao invés de HTML. Tente novamente.');
+      }
+
+      console.log('📦 [Export ZIP] HTML obtido:', html.length, 'caracteres');
+
+      // Configuração otimizada para melhor resultado
+      const options = {
+        includeAssets: true,    // Baixar todas as imagens, vídeos e fontes
+        separateCSS: true,       // Organizar CSS em arquivo separado
+        separateJS: true,        // Organizar JS em arquivo separado (inclui externos!)
+        minify: false,           // Manter legível para edição posterior
+        customCode: undefined    // Sem código customizado
+      };
+
+      console.log('📦 [Export ZIP] Configuração:', options);
+
+      // Fazer requisição para API
+      const response = await api.post('/export-zip', {
+        html,
+        originalUrl: state.url,
+        options
+      }, {
+        responseType: 'blob'
+      });
+
+      // Criar download do ZIP
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `clone-pages-${Date.now()}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log('✅ [Export ZIP] Exportação concluída');
+      
+      // Feedback detalhado
+      let message = '✅ ZIP exportado com sucesso';
+      if (savedEditedHtml && hasSavedEdits) {
+        message += ' (com suas edições)';
+      }
+      message += ' - Inclui HTML, CSS, JS e assets';
+      
+      showFeedback(message);
+
+    } catch (error: any) {
+      console.error('❌ [Export ZIP] Erro:', error);
+      showFeedback('❌ Erro ao exportar ZIP: ' + (error.response?.data?.message || error.message || 'Erro desconhecido'), 'error');
+    } finally {
+      setIsExportingZip(false);
+    }
+  }, [
+    state.editMode,
+    state.iframeSrc,
+    state.url,
+    showFeedback,
+    savedEditedHtml,
+    hasSavedEdits,
   ]);
 
 
@@ -1803,29 +1926,12 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
 
             <button
               className='btn-action btn-export-zip'
-              onClick={async () => {
-                try {
-                  // Obter HTML atualizado do iframe
-                  let html = savedEditedHtml || state.iframeSrc || '';
-
-                  if (!html || html.trim().length === 0) {
-                    showFeedback('Nenhum conteúdo disponível para exportar. Clone uma página primeiro.', 'error');
-                    return;
-                  }
-
-                  setExportHtml(html);
-                  setShowExportModal(true);
-
-                } catch (error) {
-
-                  showFeedback('Erro ao preparar export: ' + (error instanceof Error ? error.message : 'Erro desconhecido'), 'error');
-                }
-              }}
-              disabled={isLoading || !state.iframeSrc || state.editMode}
+              onClick={exportAsZip}
+              disabled={isLoading || !state.iframeSrc || state.editMode || isExportingZip}
               title={state.editMode ? 'Desative o Modo Edição para exportar' : 'Exportar página completa com assets em ZIP'}
             >
               <Package size={18} strokeWidth={2.5} />
-              <span>Exportar ZIP</span>
+              <span>{isExportingZip ? 'Exportando...' : 'Exportar ZIP'}</span>
             </button>
 
             {/* Edit Mode Toggle */}
@@ -2043,18 +2149,6 @@ src="https://www.facebook.com/tr?id=${options.pixelId}&ev=PageView&noscript=1"
         <div className={`feedback-message feedback-${feedbackMessage.type}`}>
           {feedbackMessage.text}
         </div>
-      )}
-
-      {/* 📦 Export Modal */}
-      {showExportModal && (
-        <ExportModal
-          html={exportHtml}
-          originalUrl={state.url}
-          onClose={() => {
-            setShowExportModal(false);
-            setExportHtml('');
-          }}
-        />
       )}
 
       {/* Botão de Suporte via WhatsApp - fixo no inferior esquerdo do Dashboard */}
