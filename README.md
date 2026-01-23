@@ -1,4 +1,4 @@
-# Clone Pages - Frontend
+# Clone Pages - Frontend 
 
 Aplicação React + Vite para clonagem e edição visual de páginas web.
 
