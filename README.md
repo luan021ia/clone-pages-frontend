@@ -27,9 +27,28 @@ A aplicação estará disponível em `http://localhost:5173`
 
 ## 🔧 Configuração
 
-Copie `.env.example` para `.env` e configure:
+### Sistema de Alternância de Ambientes
+
+Este projeto possui um sistema automatizado para alternar entre desenvolvimento e produção. Veja o arquivo `ENV-SWITCH.md` na raiz do projeto para instruções completas.
+
+**Uso rápido:**
+```bash
+# Alternar para desenvolvimento
+npm run env:dev
+
+# Alternar para produção e fazer build
+npm run build:prod
+```
+
+### Configuração Manual (Alternativa)
+
+Se preferir configurar manualmente, copie `.env.dev.example` para `.env.dev` e `.env.prod.example` para `.env.prod`, depois ajuste os valores:
 
 ```bash
+# Desenvolvimento
+VITE_API_BASE_URL=http://localhost:3333
+
+# Produção
 VITE_API_BASE_URL=https://bclone.fabricadelowticket.com.br
 ```
 
@@ -39,7 +58,10 @@ VITE_API_BASE_URL=https://bclone.fabricadelowticket.com.br
 |--------|-----------|
 | `npm run dev` | Inicia servidor de desenvolvimento |
 | `npm run build` | Build para produção |
+| `npm run build:prod` | Alterna para produção E faz build (recomendado) |
 | `npm run preview` | Preview do build |
+| `npm run env:dev` | Alterna para ambiente de desenvolvimento |
+| `npm run env:prod` | Alterna para ambiente de produção |
 | `npm test` | Executa testes |
 | `npm run test:watch` | Testes em modo watch |
 | `npm run test:coverage` | Relatório de cobertura |
