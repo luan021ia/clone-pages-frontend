@@ -6,19 +6,19 @@ import path from 'path'
 export default defineConfig({
   plugins: [
     react(),
-    // Remover console.logs em produção
-    {
-      name: 'remove-console',
-      enforce: 'post',
-      transform(code, id) {
-        if (process.env.NODE_ENV === 'production' && !id.includes('node_modules')) {
-          return {
-            code: code.replace(/console\.(log|warn|error|debug|info|trace)\([^)]*\);?/g, ''),
-            map: null
-          }
-        }
-      }
-    }
+    // Remover console.logs em produção - DESABILITADO TEMPORARIAMENTE
+    // {
+    //   name: 'remove-console',
+    //   enforce: 'post',
+    //   transform(code, id) {
+    //     if (process.env.NODE_ENV === 'production' && !id.includes('node_modules')) {
+    //       return {
+    //         code: code.replace(/console\.(log|warn|error|debug|info|trace)\([^)]*\);?/g, ''),
+    //         map: null
+    //       }
+    //     }
+    //   }
+    // }
   ],
   resolve: {
     alias: {

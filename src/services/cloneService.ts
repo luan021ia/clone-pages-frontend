@@ -120,16 +120,32 @@ export class CloneService {
       console.log('HTML recebido, tamanho:', html.length);
       console.log('Primeiros 200 caracteres:', html.substring(0, 200));
 
-      // ✅ Validar se os códigos injetados estão presentes quando esperados
+      // Validar se os codigos injetados estao presentes quando esperados
       const hasInjectCustom = baseParams.injectCustom === 'true';
       if (hasInjectCustom) {
-        console.log('🔍 [getOriginalHtml] Validando códigos injetados:', {
-          pixelId: baseParams.pixelId ? (html.includes(baseParams.pixelId) ? '✅' : '❌') : 'N/A',
-          gtagId: baseParams.gtagId ? (html.includes(baseParams.gtagId) ? '✅' : '❌') : 'N/A',
-          clarityId: baseParams.clarityId ? (html.includes(baseParams.clarityId) ? '✅' : '❌') : 'N/A',
-          whatsappNumber: baseParams.whatsappNumber ? (html.includes(baseParams.whatsappNumber) ? '✅' : '❌') : 'N/A',
-          utmfyCode: baseParams.utmfyCode ? (html.includes('utmfy') ? '✅' : '❌') : 'N/A',
-        });
+        const validationResults: Record<string, string> = {};
+        if (baseParams.pixelId) {
+          validationResults.pixelId = html.includes(baseParams.pixelId) ? 'OK' : 'FAIL';
+        } else {
+          validationResults.pixelId = 'N/A';
+        }
+        if (baseParams.gtagId) {
+          validationResults.gtagId = html.includes(baseParams.gtagId) ? 'OK' : 'FAIL';
+        } else {
+          validationResults.gtagId = 'N/A';
+        }
+        if (baseParams.clarityId) {
+          validationResults.clarityId = html.includes(baseParams.clarityId) ? 'OK' : 'FAIL';
+        } else {
+          validationResults.clarityId = 'N/A';
+        }
+        if (baseParams.whatsappNumber) {
+          validationResults.whatsappNumber = html.includes(baseParams.whatsappNumber) ? 'OK' : 'FAIL';
+        } else {
+          validationResults.whatsappNumber = 'N/A';
+        }
+        validationResults.utmfyCode = html.includes('utmfy') ? 'OK' : 'FAIL';
+        console.log('[getOriginalHtml] Validando codigos injetados:', validationResults);
       }
 
       return html;
@@ -154,15 +170,14 @@ export class CloneService {
     }
   ): string {
     const effective = {
-      preservePixel: false,
-      preserveGtag: false,
-      preserveClarity: false,
-      preserveUtmfy: false,
-      preserveWhatsApp: false,
-      pixelId: '',
-      gtagId: '',
-      clarityId: '',
-      ...(opts || {}),
+      preservePixel: opts?.preservePixel ?? false,
+      preserveGtag: opts?.preserveGtag ?? false,
+      preserveClarity: opts?.preserveClarity ?? false,
+      preserveUtmfy: opts?.preserveUtmfy ?? false,
+      preserveWhatsApp: opts?.preserveWhatsApp ?? false,
+      pixelId: opts?.pixelId ?? '',
+      gtagId: opts?.gtagId ?? '',
+      clarityId: opts?.clarityId ?? '',
     };
     let out = html;
 
