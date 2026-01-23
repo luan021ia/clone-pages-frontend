@@ -97,15 +97,27 @@
   width: 0;
 }
 
-/* Integrações (Centro - Scrollável) - Mesma cor de fundo */
+/* Integrações (Centro - Scrollável apenas quando necessário) - Mesma cor de fundo */
 .sidebar-integrations {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   background: transparent; /* Transparente para mostrar blur */
+  
+  /* Esconder scrollbar mas manter funcionalidade de scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Esconder scrollbar no Chrome, Safari e Opera */
+.sidebar-integrations::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .sidebar-collapsed .sidebar-integrations {
