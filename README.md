@@ -27,30 +27,55 @@ A aplicação estará disponível em `http://localhost:5173`
 
 ## 🔧 Configuração
 
-### Sistema de Alternância de Ambientes
+### Configuração de Ambientes
 
-Este projeto possui um sistema automatizado para alternar entre desenvolvimento e produção. Veja o arquivo `ENV-SWITCH.md` na raiz do projeto para instruções completas.
+Copie `.env.example` para `.env`:
 
-**Uso rápido:**
 ```bash
-# Alternar para desenvolvimento
-npm run env:dev
-
-# Alternar para produção e fazer build
-npm run build:prod
+cp .env.example .env
 ```
 
-### Configuração Manual (Alternativa)
+### 🔵 Para DESENVOLVIMENTO:
 
-Se preferir configurar manualmente, copie `.env.dev.example` para `.env.dev` e `.env.prod.example` para `.env.prod`, depois ajuste os valores:
+No arquivo `.env`, **descomente** a seção `🔵 DESENVOLVIMENTO` e **comente** a seção `🟢 PRODUÇÃO`:
 
 ```bash
-# Desenvolvimento
+# ============================================
+# 🔵 DESENVOLVIMENTO
+# ============================================
+NODE_ENV=development
 VITE_API_BASE_URL=http://localhost:3333
+PORT=5173
 
-# Produção
-VITE_API_BASE_URL=https://bclone.fabricadelowticket.com.br
+# ============================================
+# 🟢 PRODUÇÃO (COMENTADO)
+# ============================================
+# NODE_ENV=production
+# VITE_API_BASE_URL=https://bclone.fabricadelowticket.com.br
+# PORT=5173
 ```
+
+### 🟢 Para PRODUÇÃO:
+
+No arquivo `.env`, **descomente** a seção `🟢 PRODUÇÃO` e **comente** a seção `🔵 DESENVOLVIMENTO`:
+
+```bash
+# ============================================
+# 🔵 DESENVOLVIMENTO (COMENTADO)
+# ============================================
+# NODE_ENV=development
+# VITE_API_BASE_URL=http://localhost:3333
+# PORT=5173
+
+# ============================================
+# 🟢 PRODUÇÃO
+# ============================================
+NODE_ENV=production
+VITE_API_BASE_URL=https://bclone.fabricadelowticket.com.br
+PORT=5173
+```
+
+**Importante:** Após alterar o `.env`, você precisa **reiniciar o servidor de desenvolvimento** ou **rebuildar** para que as mudanças tenham efeito.
 
 ## 📝 Scripts Disponíveis
 
@@ -58,10 +83,7 @@ VITE_API_BASE_URL=https://bclone.fabricadelowticket.com.br
 |--------|-----------|
 | `npm run dev` | Inicia servidor de desenvolvimento |
 | `npm run build` | Build para produção |
-| `npm run build:prod` | Alterna para produção E faz build (recomendado) |
 | `npm run preview` | Preview do build |
-| `npm run env:dev` | Alterna para ambiente de desenvolvimento |
-| `npm run env:prod` | Alterna para ambiente de produção |
 | `npm test` | Executa testes |
 | `npm run test:watch` | Testes em modo watch |
 | `npm run test:coverage` | Relatório de cobertura |

@@ -3,7 +3,15 @@
  */
 
 // URL base da API - lê do .env
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3333';
+// Fallback: usa localhost em desenvolvimento, produção em produção
+const getDefaultApiUrl = () => {
+  const isProduction = import.meta.env.MODE === 'production' || import.meta.env.PROD;
+  return isProduction 
+    ? 'https://bclone.fabricadelowticket.com.br'
+    : 'http://localhost:3333';
+};
+
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || getDefaultApiUrl();
 
 // Timeout padrão para requisições (30 segundos)
 export const API_TIMEOUT = 30000;
